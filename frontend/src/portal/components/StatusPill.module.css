@@ -1,0 +1,8 @@
+.pill { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:3px; border:1px solid; white-space:nowrap; letter-spacing:.01em; }
+.draft    { background:#ECEFF1; color:#546E7A; border-color:#B0BEC5; }
+.imply    { background:#EEEDFE; color:#3C3489; border-color:#AFA9EC; }
+.xact     { background:#FEF4E0; color:#633806; border-color:#EF9F27; }
+.approved { background:#EAF3DE; color:#27500A; border-color:#97C459; }
+.declined { background:#FCEBEB; color:#791F1F; border-color:#F09595; }
+.convert  { background:#E6F1FB; color:#0C447C; border-color:#85B7EB; }
+.live     { background:#EAF3DE; color:#27500A; border-color:#39B54A; }

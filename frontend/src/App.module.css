@@ -1,0 +1,131 @@
+/* ── Root ───────────────────────────────────────────────────────────────────── */
+.root { display: flex; flex-direction: column; height: 100%; min-height: 100vh; }
+
+/* ── Topbar ─────────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  height: 56px; padding: 0 20px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-grey-border);
+  flex-shrink: 0; position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.topbarBrand { display: flex; align-items: center; gap: 10px; }
+.topbarLogoIcon { width: 36px; height: 36px; flex-shrink: 0; }
+.topbarXact { font-size: 15px; font-weight: 800; color: var(--color-text); letter-spacing: 0.02em; }
+.topbarErp  { font-size: 15px; font-weight: 800; color: var(--color-primary); letter-spacing: 0.02em; }
+.topbarModule {
+  font-size: 11px; color: var(--color-text-muted);
+  border-left: 1px solid var(--color-grey-border);
+  padding-left: 12px; margin-left: 2px;
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+.topbarSpacer { flex: 1; }
+
+/* Status dot */
+.statusDot {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: var(--radius-sm); border: 1px solid;
+}
+.statusOnline  { color: var(--color-primary); background: var(--color-primary-light); border-color: var(--color-primary); }
+.statusOffline { color: var(--color-danger);  background: var(--color-danger-light);  border-color: var(--color-danger); }
+.statusDotCircle { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.statusOnline .statusDotCircle { animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.statusLabel { font-weight: 700; }
+
+/* Mode switcher */
+.modeSwitcher {
+  display: flex; gap: 2px;
+  background: var(--color-grey-light);
+  border-radius: var(--radius-md);
+  padding: 3px; border: 1px solid var(--color-grey-border);
+}
+.modeBtn {
+  height: 28px; padding: 0 14px;
+  border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  color: var(--color-text-muted);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.modeBtn:hover { color: var(--color-text); background: var(--color-white); }
+.modeBtnActive { background: var(--color-white) !important; color: var(--color-text) !important; box-shadow: var(--shadow-sm); }
+
+/* Avatar */
+.topbarAvatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar — dark grey matching the fleet inspection app ──────────────────── */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--color-grey);
+  display: flex; flex-direction: column;
+  padding: 8px 0 0; overflow-y: auto;
+}
+
+.sidebarLabel {
+  font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 12px 16px 4px;
+}
+
+.navItem {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 16px;
+  background: none; border: none; border-left: 3px solid transparent;
+  text-align: left; cursor: pointer; font-family: inherit;
+  color: rgba(255,255,255,0.75);
+  font-size: 14px; font-weight: 500;
+  transition: background 0.1s, color 0.1s;
+  border-radius: 0;
+}
+.navItem:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.navActive {
+  background: rgba(58,170,53,0.15) !important;
+  border-left-color: var(--color-primary) !important;
+  color: #fff !important; font-weight: 600;
+}
+.navDot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+.navActive .navDot { background: var(--color-primary); }
+.navLabel { flex: 1; }
+.navSub { font-size: 10px; color: rgba(255,255,255,0.35); font-family: var(--font-mono, monospace); }
+.navActive .navSub { color: rgba(255,255,255,0.55); }
+
+.sidebarDivider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 16px; }
+
+.sidebarFooter {
+  margin-top: auto; padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.footerLine { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 2px; }
+
+/* ── Main content ───────────────────────────────────────────────────────────── */
+.main {
+  flex: 1; overflow-y: auto;
+  padding: 28px 32px;
+  background: var(--color-bg);
+}
+
+.pageHeader {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-grey-border);
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.pageTitle { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+.pageSub { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 2px; }

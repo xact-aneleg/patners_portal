@@ -1,0 +1,111 @@
+/* ── Filter card ────────────────────────────────────────────────────────────── */
+.filterCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-grey-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.filterTitle {
+  font-size: 13px; font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-grey-border);
+}
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.filterActions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding-top: 14px; border-top: 1px solid var(--color-grey-border);
+  flex-wrap: wrap;
+}
+
+/* ── Import section ─────────────────────────────────────────────────────────── */
+.importCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-grey-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.importTitle {
+  font-size: 13px; font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-grey-border);
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 0;
+  border-bottom: 2px solid var(--color-grey-border);
+  margin-bottom: 20px;
+}
+.tab {
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none;
+  background: none; color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: inherit;
+  transition: color 0.12s, border-color 0.12s;
+}
+.tab:hover { color: var(--color-text); }
+.tabActive {
+  color: var(--color-primary) !important;
+  border-bottom-color: var(--color-primary) !important;
+}
+
+/* ── Results table ──────────────────────────────────────────────────────────── */
+.resultsCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-grey-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-top: 20px;
+}
+.resultsHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-grey-border);
+}
+.resultsTitle { font-size: 14px; font-weight: 700; color: var(--color-text); }
+.resultsBadge {
+  font-size: 12px; font-weight: 700; padding: 3px 10px;
+  border-radius: var(--radius-sm);
+}
+.resultsOk  { background: var(--color-primary-light); color: var(--color-primary-dark); }
+.resultsErr { background: var(--color-danger-light);  color: var(--color-danger); }
+
+/* ── Stat cards ─────────────────────────────────────────────────────────────── */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.statCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-grey-border);
+  border-radius: var(--radius-md);
+  border-top: 3px solid var(--color-primary);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: box-shadow 0.12s, transform 0.12s;
+}
+.statCard:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.statCardActive { border-top-color: var(--color-primary); box-shadow: var(--shadow-md); }
+.statNumber { font-size: 28px; font-weight: 800; color: var(--color-text); line-height: 1; margin-bottom: 4px; }
+.statLabel  { font-size: 12px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }

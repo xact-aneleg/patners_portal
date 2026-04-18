@@ -1,0 +1,17 @@
+# Maven build output
+backend/target/
+
+# Node modules
+frontend/node_modules/
+frontend/dist/
+
+# IDE files
+.idea/
+*.iml
+*.class
+
+# Logs
+*.log
+
+# Keep application.properties out of git (contains DB password)
+backend/src/main/resources/application.properties

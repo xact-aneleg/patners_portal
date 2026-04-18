@@ -1,0 +1,120 @@
+package com.xact.sy195.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Data
+@Entity
+@Table(name = "dl01_mast")
+public class Dl01Mast {
+
+    @Id
+    @Column(name = "dl_code", length = 8)
+    private String dlCode;
+
+    @Column(name = "dl_name", length = 40)     private String dlName;
+    @Column(name = "status", length = 1)        private String status;
+    @Column(name = "master_acct", length = 1)   private String masterAcct;
+    @Column(name = "address_only_acct", length = 1) private String addressOnlyAcct;
+    @Column(name = "linked_acct", length = 8)   private String linkedAcct;
+    @Column(name = "loc", length = 3)           private String loc;
+    @Column(name = "filing_code", length = 8)   private String filingCode;
+    @Column(name = "tel_1", length = 22)        private String tel1;
+    @Column(name = "tel_2", length = 22)        private String tel2;
+    @Column(name = "fax_1", length = 22)        private String fax1;
+    @Column(name = "fax_2", length = 22)        private String fax2;
+    @Column(name = "contact", length = 29)      private String contact;
+    @Column(name = "popi_conf", length = 1)     private String popiConf = "N";
+    @Column(name = "controlled_by", length = 10) private String controlledBy;
+    @Column(name = "cust_acct_code", length = 8) private String custAcctCode;
+    @Column(name = "co_reg", length = 17)       private String coReg;
+    @Column(name = "vat_no", length = 12)       private String vatNo;
+    @Column(name = "post_add_1", length = 30)   private String postAdd1;
+    @Column(name = "post_add_2", length = 30)   private String postAdd2;
+    @Column(name = "post_add_3", length = 30)   private String postAdd3;
+    @Column(name = "post_add_4", length = 10)   private String postAdd4;
+    @Column(name = "post_code", length = 4)     private String postCode;
+    @Column(name = "phy_add_1", length = 30)    private String phyAdd1;
+    @Column(name = "phy_add_2", length = 30)    private String phyAdd2;
+    @Column(name = "phy_add_3", length = 30)    private String phyAdd3;
+    @Column(name = "phy_add_4", length = 20)    private String phyAdd4;
+    @Column(name = "delivery_by", length = 4)   private String deliveryBy;
+    @Column(name = "del_area", length = 5)      private String delArea;
+    @Column(name = "dl_cat", length = 5)        private String dlCat;
+    @Column(name = "sync_dl_cat_disc", length = 1) private String syncDlCatDisc = "N";
+    @Column(name = "region", length = 5)        private String region;
+    @Column(name = "rep_code", length = 5)      private String repCode;
+    @Column(name = "mkt_rep", length = 5)       private String mktRep;
+    @Column(name = "class", length = 3)         private String classCode;
+    @Column(name = "target_based_on", length = 1) private String targetBasedOn;
+    @Column(name = "send_stmt", length = 1)     private String sendStmt;
+    @Column(name = "bee_rating")                private Integer beeRating = 0;
+    @Column(name = "bee_expiry_date")           private LocalDate beeExpiryDate;
+    @Column(name = "export_acct", length = 1)   private String exportAcct;
+    @Column(name = "track_by_foreign_currency", length = 1) private String trackByForeignCurrency;
+    @Column(name = "foreign_currency", length = 10) private String foreignCurrency;
+    @Column(name = "opened_date")               private LocalDate openedDate;
+    @Column(name = "so_pick_stk", length = 1)   private String soPickStk;
+    @Column(name = "inv_type", length = 1)      private String invType;
+    @Column(name = "inv_incl", length = 1)      private String invIncl;
+    @Column(name = "amend_so_inv_add", length = 1) private String amendSoInvAdd;
+    @Column(name = "auto_cession_of_inv", length = 1) private String autoCessionOfInv;
+    @Column(name = "auto_email_inv_on_prt", length = 1) private String autoEmailInvOnPrt = "N";
+    @Column(name = "enable_rounding", length = 1) private String enableRounding;
+    @Column(name = "incl_in_cb_auto_tag", length = 1) private String inclInCbAutoTag = "Y";
+    @Column(name = "cr_limit_currency", length = 1) private String crLimitCurrency = "L";
+    @Column(name = "cr_status", length = 4)     private String crStatus;
+    @Column(name = "terms")                     private Integer terms = 0;
+    @Column(name = "terms_from", length = 1)    private String termsFrom;
+    @Column(name = "sett_disc", precision = 7, scale = 2) private BigDecimal settDisc = BigDecimal.ZERO;
+    @Column(name = "max_cr_limit", precision = 13, scale = 2) private BigDecimal maxCrLimit = BigDecimal.ZERO;
+    @Column(name = "max_cr_limit_forex", precision = 13, scale = 2) private BigDecimal maxCrLimitForex = BigDecimal.ZERO;
+    @Column(name = "cr_limit", precision = 13, scale = 2) private BigDecimal crLimit = BigDecimal.ZERO;
+    @Column(name = "cr_limit_forex", precision = 13, scale = 2) private BigDecimal crLimitForex = BigDecimal.ZERO;
+    @Column(name = "temp_cr_limit", length = 1) private String tempCrLimit;
+    @Column(name = "temp_cr_valid_until")       private LocalDate tempCrValidUntil;
+    @Column(name = "org_cr_limit", precision = 13, scale = 2) private BigDecimal orgCrLimit = BigDecimal.ZERO;
+    @Column(name = "org_cr_limit_forex", precision = 13, scale = 2) private BigDecimal orgCrLimitForex = BigDecimal.ZERO;
+    @Column(name = "deposit_held", precision = 13, scale = 2) private BigDecimal depositHeld = BigDecimal.ZERO;
+    @Column(name = "deposit_held_forex", precision = 13, scale = 2) private BigDecimal depositHeldForex = BigDecimal.ZERO;
+    @Column(name = "debtor_insurance", precision = 13, scale = 2) private BigDecimal debtorInsurance = BigDecimal.ZERO;
+    @Column(name = "debtor_insurance_forex", precision = 13, scale = 2) private BigDecimal debtorInsuranceForex = BigDecimal.ZERO;
+    @Column(name = "enable_auto_hold", length = 1) private String enableAutoHold;
+    @Column(name = "charge_interest", length = 1) private String chargeInterest;
+    @Column(name = "surety", length = 1)        private String surety;
+    @Column(name = "legal_action", length = 1)  private String legalAction;
+    @Column(name = "comment", length = 400)     private String comment;
+    @Column(name = "email", length = 80)        private String email;
+    @Column(name = "qt_email", length = 80)     private String qtEmail;
+    @Column(name = "inv_email", length = 80)    private String invEmail;
+    @Column(name = "stmt_email", length = 80)   private String stmtEmail;
+    @Column(name = "balance", precision = 13, scale = 2) private BigDecimal balance = BigDecimal.ZERO;
+    @Column(name = "balance_forex", precision = 13, scale = 2) private BigDecimal balanceForex = BigDecimal.ZERO;
+    @Column(name = "age_cur", precision = 13, scale = 2) private BigDecimal ageCur = BigDecimal.ZERO;
+    @Column(name = "age_30", precision = 13, scale = 2) private BigDecimal age30 = BigDecimal.ZERO;
+    @Column(name = "age_60", precision = 13, scale = 2) private BigDecimal age60 = BigDecimal.ZERO;
+    @Column(name = "age_90", precision = 13, scale = 2) private BigDecimal age90 = BigDecimal.ZERO;
+    @Column(name = "age_120", precision = 13, scale = 2) private BigDecimal age120 = BigDecimal.ZERO;
+    @Column(name = "age_120_plus", precision = 13, scale = 2) private BigDecimal age120Plus = BigDecimal.ZERO;
+    @Column(name = "so_bo_out", precision = 13, scale = 2) private BigDecimal soBoOut = BigDecimal.ZERO;
+    @Column(name = "so_stk_out", precision = 13, scale = 2) private BigDecimal soStkOut = BigDecimal.ZERO;
+    @Column(name = "daybook_inv_tot", precision = 13, scale = 2) private BigDecimal daybookInvTot = BigDecimal.ZERO;
+    @Column(name = "ic_acct", length = 1)       private String icAcct = "N";
+    @Column(name = "ic_min_gp_perc", precision = 7, scale = 2) private BigDecimal icMinGpPerc = BigDecimal.ZERO;
+    @Column(name = "last_inv_date")             private LocalDate lastInvDate;
+    @Column(name = "last_pay_date")             private LocalDate lastPayDate;
+    @Column(name = "last_dl30_row_id")          private Integer lastDl30RowId = 0;
+    @Column(name = "custom_field_1", length = 20) private String customField1;
+    @Column(name = "custom_field_2", length = 20) private String customField2;
+    @Column(name = "custom_field_3", length = 20) private String customField3;
+    @Column(name = "custom_field_4", length = 20) private String customField4;
+    @Column(name = "custom_field_5", length = 20) private String customField5;
+    @Column(name = "custom_field_6", length = 20) private String customField6;
+    @Column(name = "custom_field_7", length = 20) private String customField7;
+    @Column(name = "custom_field_8", length = 20) private String customField8;
+    @Column(name = "custom_field_9", length = 20) private String customField9;
+    @Column(name = "custom_field_10", length = 20) private String customField10;
+}
