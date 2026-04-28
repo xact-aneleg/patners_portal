@@ -4,7 +4,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data @Entity @Table(name = "cl01_mast")
+@Data @Entity
+@Table(name = "cl01_mast")
 public class Cl01Mast {
     @Id @Column(name = "cl_code", length = 8)   private String clCode;
     @Column(name = "cl_name", length = 40)       private String clName;

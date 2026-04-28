@@ -1,101 +1,42 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+// Dynamically resolve backend host — works from any device on the network
+const BASE = `${window.location.protocol}//${window.location.hostname}:8080/api`
 
-// ── Export ────────────────────────────────────────────────────────────────────
+const http = axios.create({ baseURL: BASE })
 
-async function exportModule(module, filters) {
-  const res = await api.post(`/export/${module}`, filters, { responseType: 'blob' })
-  const cd  = res.headers['content-disposition'] || ''
-  const match = cd.match(/filename="?([^"]+)"?/)
-  const filename = match ? match[1] : `${module}_export.xlsx`
-  triggerDownload(res.data, filename)
+const api = {
+  checkHealth: () => http.get('/health').then(() => true).catch(() => false),
+
+  exportModule: (module, filters) =>
+    http.post(`/export/${module}`, filters, { responseType: 'blob' }).then(r => r.data),
+
+  downloadTemplate: (module) =>
+    http.get(`/export/${module}/template`, { responseType: 'blob' }).then(r => r.data),
+
+  importModule: (module, file) => {
+    const form = new FormData()
+    form.append('file', file)
+    return http.post(`/import/${module}`, form).then(r => r.data)
+  },
+
+  conversionExport: (module) =>
+    http.get(`/conversion/export/${module}`, { responseType: 'blob' }).then(r => r.data),
+
+  conversionImport: (file, module, emptyTable = false) => {
+    const form = new FormData()
+    form.append('file', file)
+    return http.post(`/conversion/import?module=${module}&emptyTable=${emptyTable}`, form).then(r => r.data)
+  },
+
+  getCount: (module) =>
+    http.get(`/conversion/count/${module}`).then(r => r.data),
+
+  lookup: (module, q, limit = 15) =>
+    http.get(`/lookup/${module}`, { params: { q, limit } }).then(r => r.data),
+
+  getCodeRange: (module) =>
+    http.get(`/lookup/range/${module}`).then(r => r.data),
 }
 
-async function downloadTemplate(module) {
-  const res = await api.get(`/export/${module}/template`, { responseType: 'blob' })
-  triggerDownload(res.data, `${module}_import_template.xlsx`)
-}
-
-// ── Import ────────────────────────────────────────────────────────────────────
-
-async function importModule(module, file) {
-  const form = new FormData()
-  form.append('file', file)
-  const res = await api.post(`/import/${module}`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
-  return res.data
-}
-
-// ── Code range defaults ───────────────────────────────────────────────────────
-// Fetches the first (ASC) and last (DESC) code from the table.
-// Returns { first: "ACC001", last: "ZZZ999" }
-
-async function getCodeRange(module) {
-  try {
-    const res = await api.get(`/lookup/range/${module}`)
-    return res.data  // { first, last }
-  } catch {
-    return { first: '!', last: '~' }  // fallback to original defaults
-  }
-}
-
-// ── Conversion ───────────────────────────────────────────────────────────────
-
-async function conversionExport(module) {
-  const res = await api.get(`/conversion/export/${module}`, { responseType: 'blob' })
-  const cd  = res.headers['content-disposition'] || ''
-  const match = cd.match(/filename="?([^"]+)"?/)
-  const filename = match ? match[1] : `${module}_conversion.xlsx`
-  triggerDownload(res.data, filename)
-}
-
-async function conversionImport(module, file, emptyTable = false, delimiter = ',', headerLineNo = 1) {
-  const form = new FormData()
-  form.append('file', file)
-  form.append('module', module)
-  form.append('emptyTable', emptyTable)
-  form.append('delimiter', delimiter)
-  form.append('headerLineNo', headerLineNo)
-  const res = await api.post('/conversion/import', form, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
-  return res.data
-}
-
-async function getConversionCount(module) {
-  const res = await api.get(`/conversion/count/${module}`)
-  return res.data
-}
-
-// ── Health ────────────────────────────────────────────────────────────────────
-
-async function checkHealth() {
-  try {
-    await api.get('/health')
-    return true
-  } catch {
-    return false
-  }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function triggerDownload(blob, filename) {
-  const url = URL.createObjectURL(blob)
-  const a   = document.createElement('a')
-  a.href     = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-export default {
-  exportModule, downloadTemplate, importModule,
-  getCodeRange,
-  conversionExport, conversionImport, getConversionCount,
-  checkHealth
-}
+export default api

@@ -13,7 +13,10 @@ import java.util.List;
 public class AdminController {
 
     private final RegistrationService regService;
-    public AdminController(RegistrationService regService) { this.regService = regService; }
+    public AdminController(RegistrationService regService)
+    {
+        this.regService = regService;
+    }
 
     // XactERP: all registrations across all partners
     @GetMapping("/registrations")

@@ -1,0 +1,62 @@
+version: '3.9'
+
+services:
+
+  # ── PostgreSQL database ────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: xacterp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       xactdev
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-anelegasa}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Run schema on first start
+      - ./backend/src/main/resources/xactdev_schema_clean.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/02_portal.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot backend ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: xacterp_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://db:5432/xactdev
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-anelegasa}
+      PORTAL_JWT_SECRET:          ${JWT_SECRET:-xactErpPartnerPortalSuperSecretKey2024}
+      PORTAL_JWT_EXPIRATION_MS:   86400000
+      PROVISIONING_PSQL_PATH:     psql
+      PROVISIONING_DB_HOST:       db
+      PROVISIONING_DB_PORT:       5432
+    ports:
+      - "8080:8080"
+
+  # ── React frontend (nginx) ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: xacterp_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:
