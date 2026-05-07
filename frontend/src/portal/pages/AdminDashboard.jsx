@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getAllRegistrations } from '../api/portalApi.js'
 import StatusPill from '../components/StatusPill.jsx'
 import s from './Portal.module.css'
@@ -12,51 +13,59 @@ const FILTERS = [
   { id:'DECLINED_XACT', label:'Declined' },
 ]
 
+const PAGE_SIZE = 10
+
 function fmt(d) {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'})
+  return new Date(d).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' })
 }
 
 export default function AdminDashboard({ onViewReg }) {
   const [regs,   setRegs]   = useState([])
   const [filter, setFilter] = useState('ALL')
+  const [page,   setPage]   = useState(0)
   const [err,    setErr]    = useState(null)
 
   useEffect(() => {
     getAllRegistrations()
-      .then(setRegs)
+      .then(data => { setRegs(data); setPage(0) })
       .catch(() => setErr('Failed to load registrations'))
   }, [])
 
-  const filtered = filter === 'ALL' ? regs : regs.filter(r => r.status === filter)
+  const filtered   = filter === 'ALL' ? regs : regs.filter(r => r.status === filter)
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paged      = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  function changeFilter(f) { setFilter(f); setPage(0) }
 
   return (
     <div className={s.page}>
       {err && <div className={s.alertErr}>{err}</div>}
 
-      {/* Filter tabs */}
       <div className={s.filterTabs}>
         {FILTERS.map(f => {
-          const count = f.id==='ALL' ? regs.length : regs.filter(r=>r.status===f.id).length
+          const count = f.id==='ALL' ? regs.length : regs.filter(r => r.status===f.id).length
           return (
             <button key={f.id}
               className={`${s.filterTab} ${filter===f.id ? s.filterTabActive : ''}`}
-              onClick={() => setFilter(f.id)}>
-              {f.label} {count > 0 && <span style={{opacity:.7, marginLeft:4}}>({count})</span>}
+              onClick={() => changeFilter(f.id)}>
+              {f.label}{count > 0 && <span style={{opacity:.65, marginLeft:4}}>({count})</span>}
             </button>
           )
         })}
       </div>
 
-      {/* Registration list */}
-      {filtered.length === 0
-        ? <div className={s.queueEmpty}>
+      {paged.length === 0
+        ? (
+          <div className={s.queueEmpty}>
             <div className={s.queueEmptyIcon}>📋</div>
             <div className={s.queueEmptyTitle}>No registrations</div>
             <div className={s.queueEmptySub}>No registrations match this filter</div>
           </div>
-        : <div className={s.adminCard}>
-            {filtered.map(r => (
+        )
+        : (
+          <div className={s.adminCard}>
+            {paged.map(r => (
               <div key={r.id} className={s.adminCardRow} onClick={() => onViewReg(r.id)}>
                 <div className={s.adminRowMain}>
                   <div className={s.adminRowCompany}>{r.companyName}</div>
@@ -73,7 +82,20 @@ export default function AdminDashboard({ onViewReg }) {
               </div>
             ))}
           </div>
+        )
       }
+
+      {totalPages > 1 && (
+        <div className={s.pagination}>
+          <button className={s.pgBtn} disabled={page===0} onClick={() => setPage(p => p-1)}>
+            <ChevronLeft size={15}/> Prev
+          </button>
+          <span className={s.pgInfo}>Page {page+1} of {totalPages} · {filtered.length} total</span>
+          <button className={s.pgBtn} disabled={page===totalPages-1} onClick={() => setPage(p => p+1)}>
+            Next <ChevronRight size={15}/>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

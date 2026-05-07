@@ -61,6 +61,7 @@ export function getSession() {
 }
 
 export const listMyRegistrations = ()      => http().get('/registrations').then(r => r.data)
+export const deleteRegistration  = id      => http().delete(`/registrations/${id}`).then(r => r.data)
 export const getRegistration     = id      => http().get(`/registrations/${id}`).then(r => r.data)
 export const createRegistration  = data    => http().post('/registrations', data).then(r => r.data)
 export const updateRegistration  = (id, d) => http().put(`/registrations/${id}`, d).then(r => r.data)
@@ -74,3 +75,10 @@ export const getConversionStatus = id      => http().get(`/registrations/${id}/c
 export const getAllRegistrations  = ()      => http().get('/admin/registrations').then(r => r.data)
 export const getPendingXact      = ()      => http().get('/admin/pending-xact').then(r => r.data)
 export const getPendingImply     = ()      => http().get('/admin/pending-imply').then(r => r.data)
+
+// ── AI assistant ──────────────────────────────────────────────────────────────
+export const getAiSuggestions = (description) =>
+  http().post('/ai/suggest', { description }).then(r => r.data)
+
+export const getAiAnalysis = (registrationId) =>
+  http().post('/ai/analyze', { registrationId }).then(r => r.data)

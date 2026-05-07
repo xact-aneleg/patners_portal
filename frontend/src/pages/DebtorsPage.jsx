@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { Sparkles, X, Wand2 } from 'lucide-react'
 import api from '../api/bulkApi.js'
 import LookupField from '../components/LookupField.jsx'
 import s from './MobilePage.module.css'
+import ai from './AiPanel.module.css'
 
 export default function DebtorsPage() {
   const [tab,     setTab]     = useState('export')
@@ -20,6 +22,29 @@ export default function DebtorsPage() {
     filterRep:false, repType:'R', startRep:'', endRep:'~~~',
   })
   const set = (k,v) => setF(p => ({...p,[k]:v}))
+
+  // AI filter assistant state
+  const [aiOpen,   setAiOpen]   = useState(false)
+  const [aiDesc,   setAiDesc]   = useState('')
+  const [aiLoading,setAiLoading]= useState(false)
+  const [aiResult, setAiResult] = useState(null)
+  const [aiErr,    setAiErr]    = useState(null)
+
+  async function askAi() {
+    if (!aiDesc.trim()) return
+    setAiLoading(true); setAiErr(null); setAiResult(null)
+    try {
+      const data = await api.aiFilterSuggest('debtors', aiDesc)
+      setAiResult(data)
+    } catch (e) {
+      setAiErr(e.response?.data?.message || e.response?.data || e.message || 'AI request failed')
+    } finally { setAiLoading(false) }
+  }
+
+  function applyAiFilters(r) {
+    if (r?.filters) setF(prev => ({ ...prev, ...r.filters }))
+    setAiOpen(false)
+  }
 
   async function doExport() {
     setBusy(true); setToast(null)
@@ -57,6 +82,47 @@ export default function DebtorsPage() {
       {toast && <div className={`${s.toast} ${toast.ok?s.toastOk:s.toastErr}`}>
         {toast.msg}<button onClick={()=>setToast(null)}>×</button></div>}
 
+      {/* AI overlay */}
+      {aiOpen && (
+        <div className={ai.overlay} onClick={() => setAiOpen(false)}>
+          <div className={ai.panel} onClick={e => e.stopPropagation()}>
+            <div className={ai.header}>
+              <span className={ai.title}><Sparkles size={16}/> AI Filter Assistant</span>
+              <button className={ai.close} onClick={() => setAiOpen(false)}><X size={16}/></button>
+            </div>
+            <div className={ai.body}>
+              <p className={ai.hint}>Describe what you want to export in plain language.</p>
+              <textarea className={ai.textarea} rows={3}
+                placeholder='e.g. "All debtors on hold with positive balance"'
+                value={aiDesc} onChange={e => setAiDesc(e.target.value)}/>
+              <button className={ai.submit} onClick={askAi} disabled={aiLoading || !aiDesc.trim()}>
+                {aiLoading ? 'Thinking…' : <><Wand2 size={14}/> Suggest filters</>}
+              </button>
+              {aiErr && <div className={ai.error}>{aiErr}</div>}
+              {aiResult && (
+                <div className={ai.result}>
+                  {aiResult.reasoning && <p className={ai.reasoning}>{aiResult.reasoning}</p>}
+                  {Object.entries(aiResult.filters || {}).map(([k,v]) => (
+                    <div key={k} className={ai.row}>
+                      <span className={ai.key}>{k}</span>
+                      <span className={ai.val}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {aiResult && (
+              <div className={ai.footer}>
+                <button className={ai.decline} onClick={() => { setAiResult(null); setAiDesc('') }}>Discard</button>
+                <button className={ai.apply} onClick={() => applyAiFilters(aiResult)}>
+                  <Wand2 size={14}/> Apply filters
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className={s.tabs}>
         <button className={`${s.tab} ${tab==='export'?s.tabActive:''}`} onClick={()=>setTab('export')}>Export</button>
@@ -82,7 +148,20 @@ export default function DebtorsPage() {
 
           {/* Filters */}
           <div className={s.card}>
-            <div className={s.cardTitle}>Filters</div>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'14px'}}>
+              <span className={s.cardTitle} style={{margin:0,padding:0,border:0}}>Filters</span>
+              <button
+                onClick={() => setAiOpen(true)}
+                style={{
+                  display:'flex',alignItems:'center',gap:'5px',
+                  height:'28px',padding:'0 10px',
+                  background:'var(--color-primary)',color:'#fff',
+                  border:'none',borderRadius:'6px',
+                  fontSize:'12px',fontWeight:'700',cursor:'pointer',fontFamily:'inherit'
+                }}>
+                <Sparkles size={13}/> AI filters
+              </button>
+            </div>
             <div className={s.stack}>
               <div className={s.field}>
                 <label>Account type</label>
@@ -137,7 +216,6 @@ export default function DebtorsPage() {
             </div>
           </div>
 
-          {/* Actions */}
           <div className={s.actions}>
             <button className={s.btnPrimary} onClick={doExport} disabled={busy}>
               {busy ? 'Exporting…' : '↓ Export with filters'}

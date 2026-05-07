@@ -37,6 +37,9 @@ const api = {
 
   getCodeRange: (module) =>
     http.get(`/lookup/range/${module}`).then(r => r.data),
+
+  aiFilterSuggest: (module, description) =>
+    http.post('/ai/filter-suggest', { module, description }).then(r => r.data),
 }
 
 export default api

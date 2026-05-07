@@ -65,6 +65,13 @@
       <artifactId>poi-ooxml</artifactId>
       <version>5.2.5</version>
     </dependency>
+    <!-- Anthropic Java SDK — Claude AI -->
+    <dependency>
+      <groupId>com.anthropic</groupId>
+      <artifactId>anthropic-java</artifactId>
+      <version>2.27.0</version>
+    </dependency>
+
     <!-- Lombok — boilerplate elimination -->
     <dependency>
       <groupId>org.projectlombok</groupId>

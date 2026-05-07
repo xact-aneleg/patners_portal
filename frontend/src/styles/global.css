@@ -1,3 +1,4 @@
+@import './tokens.css';
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root {
   --green:#3aaa35; --green-dk:#2d8828; --green-lt:#e8f7e7;
@@ -23,28 +24,52 @@
   --shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 12px rgba(0,0,0,0.1);
   --font-family:'Inter',system-ui,sans-serif;
 }
-html,body,#root{height:100%;font-family:'Inter',system-ui,sans-serif;font-size:14px;color:#1a2733;background:#f4f6f8;line-height:1.5;-webkit-font-smoothing:antialiased;}
+html,body,#root{height:100%;font-family:'Inter',system-ui,sans-serif;font-size:14px;color:var(--color-text);background:var(--bg-app);line-height:1.5;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font-family:inherit}
 input,select,textarea{
-  font-family:inherit;font-size:14px;color:#1a2733;
-  background:#fff;border:1px solid #d1d9e0;border-radius:6px;
-  padding:0 12px;height:40px;width:100%;outline:none;
+  font-family:inherit;font-size:13px;color:var(--color-text);
+  background:var(--bg-surface);border:1px solid var(--border-color);border-radius:6px;
+  padding:0 11px;height:36px;width:100%;outline:none;
   transition:border-color .15s,box-shadow .15s;
   -webkit-appearance:none;appearance:none;
 }
-input:focus,select:focus{border-color:#3aaa35;box-shadow:0 0 0 3px rgba(58,170,53,.15);}
-input::placeholder{color:#b0bcc6;}
+input:focus,select:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(58,170,53,.15);}
+input::placeholder{color:var(--color-text-muted);}
 select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23475a68' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer;
 }
-label{display:block;font-size:11px;font-weight:700;color:#6b7c8d;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
+label{display:block;font-size:11px;font-weight:700;color:var(--color-text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;}
 ::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:#c0cad2;border-radius:2px}
+::-webkit-scrollbar-thumb{background:var(--color-grey-mid);border-radius:2px}
 
-/* Mobile inputs — prevent iOS zoom, bigger tap targets */
-@media(max-width:768px){
-  input,select,textarea{height:48px;font-size:16px;}
+/* Mobile inputs — prevent iOS zoom on touch devices only */
+@media(max-width:480px){
+  input,select,textarea{height:44px;font-size:16px;}
   label{font-size:12px;}
+}
+
+/* ── Dark mode — must be at the END and use html[...] (specificity 0,1,1)
+   to beat the :root block above (specificity 0,1,0) in the cascade ── */
+html[data-theme="dark"] {
+  --bg-app:              #111113;
+  --bg-surface:          #1C1C1E;
+  --bg-sidebar:          #1E2A35;
+  --color-text:          #FFFFFF;
+  --color-text-muted:    rgba(255,255,255,0.55);
+  --color-grey-light:    #252527;
+  --color-grey-mid:      rgba(255,255,255,0.12);
+  --border-color:        rgba(255,255,255,0.10);
+  --border:              1px solid rgba(255,255,255,0.10);
+  --border-input:        rgba(255,255,255,0.15);
+  --color-primary-light: rgba(58,170,53,0.15);
+  --color-danger-light:  rgba(220,53,69,0.12);
+  --active-bg:           #252527;
+  --inactive-bg:         #1C1C1E;
+  --table-odd:           #1C1C1E;
+  --table-even:          #252527;
+  --shadow-sm:           0 1px 3px rgba(0,0,0,0.35);
+  --shadow-md:           0 4px 12px rgba(0,0,0,0.5);
+  --shadow-card:         0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.2);
 }

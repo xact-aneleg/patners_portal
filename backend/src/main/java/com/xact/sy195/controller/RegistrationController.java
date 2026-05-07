@@ -56,6 +56,15 @@ public class RegistrationController {
         return ResponseEntity.ok(regService.get(id));
     }
 
+    // Partner: delete DRAFT
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
+        Partner p = partnerService.getByEmail(auth.getName());
+        regService.delete(id, p.getId());
+        return ResponseEntity.noContent().build();
+    }
+
     // Partner: submit DRAFT → PENDING
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasRole('PARTNER')")

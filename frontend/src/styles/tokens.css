@@ -1,0 +1,103 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   XACT ERP - Design Token Variables (for CSS Modules / non-Tailwind projects)
+   Import once in your global stylesheet: @import './tokens.css';
+   Use as: color: var(--color-primary);  border-radius: var(--radius-md);
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── Brand colours ──────────────────────────────────────────────────────── */
+  --color-primary:       #3AAA35;
+  --color-primary-dark:  #2B8227;
+  --color-primary-light: #E8F5E8;
+  --color-accent:        #FBBA00;   /* Logo X + warnings only - never buttons */
+  --color-accent-light:  #FFF8E1;
+
+  /* ── Neutrals ───────────────────────────────────────────────────────────── */
+  --color-white:         #FFFFFF;
+  --color-grey:          #475A68;   /* Body text, headings */
+  --color-grey-light:    #F4F6F8;   /* Page bg, table headers, disabled inputs */
+  --color-grey-mid:      #CBD5E0;   /* Borders, dividers */
+  --color-text:          #1A202C;
+  --color-text-muted:    #6B7280;   /* Secondary labels, placeholders */
+
+  /* ── Semantic ───────────────────────────────────────────────────────────── */
+  --color-danger:        #DC3545;
+  --color-danger-light:  #FFF5F5;
+  --color-success:       #28A745;
+  --color-success-light: #F0FFF4;
+  --color-warning:       #FBBA00;
+  --color-warning-light: #FFF8E1;
+
+  /* ── Borders ────────────────────────────────────────────────────────────── */
+  --border:              1px solid #CBD5E0;
+  --border-color:        #CBD5E0;
+
+  /* ── Border radius ──────────────────────────────────────────────────────── */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-xl:   14px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ────────────────────────────────────────────────────────────── */
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-modal: 0 20px 60px rgba(0,0,0,0.18);
+  --shadow-input: 0 0 0 3px rgba(58,170,53,0.15);
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.06);
+
+  /* ── Spacing (matches Tailwind default scale) ───────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font-family:    'Inter', system-ui, sans-serif;
+  --font-size-xs:   11px;   /* Table headers, badge labels */
+  --font-size-sm:   13px;   /* Body text, form labels, table cells */
+  --font-size-base: 15px;   /* General content */
+  --font-size-lg:   17px;   /* Card headings, section titles */
+  --font-size-xl:   20px;   /* Modal titles */
+  --font-size-2xl:  24px;   /* Page headings */
+
+  /* ── Sidebar ────────────────────────────────────────────────────────────── */
+  --sidebar-width:       240px;
+  --sidebar-bg:          #1E2A35;
+  --sidebar-text:        #CBD5E0;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-hover-bg:    rgba(255,255,255,0.06);
+  --sidebar-active-bg:   #3AAA35;
+
+  /* ── Semantic surface tokens (theme-aware - override in [data-theme="dark"]) */
+  --bg-app:              #F4F6F8;   /* Page background */
+  --bg-surface:          #FFFFFF;   /* Card / modal / input backgrounds */
+  --color-row-highlight: #FDE399;   /* Selected/active table rows */
+  --shadow-sm-light:     0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md-light:     0 4px 12px rgba(0, 0, 0, 0.10);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dark theme overrides (applied when ThemeProvider sets [data-theme="dark"]
+   on the <html> element).
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  --bg-app:              #111113;
+  --bg-surface:          #1C1C1E;
+  --color-text:          #FFFFFF;
+  --color-text-muted:    rgba(255, 255, 255, 0.6);
+  --color-grey-light:    #252527;
+  --color-grey-mid:      rgba(255, 255, 255, 0.10);
+  --border:              1px solid rgba(255, 255, 255, 0.10);
+  --border-color:        rgba(255, 255, 255, 0.10);
+  --color-primary-light: rgba(58, 170, 53, 0.15);
+  --color-danger-light:  rgba(220, 53, 69, 0.12);
+  --color-row-highlight: rgba(251, 186, 0, 0.12);
+  --shadow-sm-light:     0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md-light:     0 4px 12px rgba(0, 0, 0, 0.45);
+}

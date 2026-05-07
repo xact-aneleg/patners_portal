@@ -8,18 +8,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 public class RegistrationService {
 
-    private final RegistrationRepository  regRepo;
-    private final RegLocationRepository   locRepo;
-    private final RegUserRepository       userRepo;
-    private final WorkflowEventRepository eventRepo;
-    private final PartnerRepository       partnerRepo;
-    private final ConversionJobRepository jobRepo;
+    private final RegistrationRepository     regRepo;
+    private final RegLocationRepository      locRepo;
+    private final RegUserRepository          userRepo;
+    private final WorkflowEventRepository    eventRepo;
+    private final PartnerRepository          partnerRepo;
+    private final ConversionJobRepository    jobRepo;
+    private final ValidationService          validationService;
     private final CompanyProvisioningService provisioningService;
 
     public RegistrationService(RegistrationRepository regRepo,
@@ -28,6 +30,7 @@ public class RegistrationService {
                                WorkflowEventRepository eventRepo,
                                PartnerRepository partnerRepo,
                                ConversionJobRepository jobRepo,
+                               ValidationService validationService,
                                @Lazy CompanyProvisioningService provisioningService) {
         this.regRepo             = regRepo;
         this.locRepo             = locRepo;
@@ -35,12 +38,73 @@ public class RegistrationService {
         this.eventRepo           = eventRepo;
         this.partnerRepo         = partnerRepo;
         this.jobRepo             = jobRepo;
+        this.validationService   = validationService;
         this.provisioningService = provisioningService;
+    }
+
+    // ── Field validation (mirrors frontend CHAR_RULES / Genero sy_lib.4gl) ────
+    private void validateRequest(RegistrationRequest req) {
+        List<String> errors = new ArrayList<>();
+
+        check(errors, "Company name",   req.getCompanyName(),    "D",    true,  100);
+        check(errors, "Reg number",     req.getRegNumber(),      "D",    false,  30);
+        check(errors, "VAT number",     req.getVatNumber(),      "VN",   false,  30);
+        check(errors, "Company email",  req.getCompanyEmail(),   "E",    false, 100);
+        check(errors, "Telephone",      req.getTelephone(),      "T",    false,  30);
+        check(errors, "Bank name",      req.getBankName(),       "D",    false,  60);
+        check(errors, "Branch name",    req.getBankBranch(),     "D",    false,  60);
+        check(errors, "Branch code",    req.getBankBranchCode(), "N",    false,  20);
+        check(errors, "Account number", req.getBankAccount(),    "N",    false,  30);
+
+        if (req.getNumUsers() != null && (req.getNumUsers() < 1 || req.getNumUsers() > 500))
+            errors.add("Number of users must be between 1 and 500");
+
+        if (req.getPeriodGl() != null && (req.getPeriodGl() < 1 || req.getPeriodGl() > 12)) errors.add("GL period must be 1–12");
+        if (req.getPeriodCb() != null && (req.getPeriodCb() < 1 || req.getPeriodCb() > 12)) errors.add("CB period must be 1–12");
+        if (req.getPeriodDl() != null && (req.getPeriodDl() < 1 || req.getPeriodDl() > 12)) errors.add("DL period must be 1–12");
+        if (req.getPeriodSa() != null && (req.getPeriodSa() < 1 || req.getPeriodSa() > 12)) errors.add("SA period must be 1–12");
+        if (req.getPeriodCl() != null && (req.getPeriodCl() < 1 || req.getPeriodCl() > 12)) errors.add("CL period must be 1–12");
+        if (req.getPeriodPu() != null && (req.getPeriodPu() < 1 || req.getPeriodPu() > 12)) errors.add("PU period must be 1–12");
+
+        if (req.getLocations() != null) {
+            for (int i = 0; i < req.getLocations().size(); i++) {
+                LocationDTO loc = req.getLocations().get(i);
+                String pfx = "Location " + (i + 1);
+                check(errors, pfx + " code",    loc.getLoc(),          "C", true,   3);
+                check(errors, pfx + " whs",     loc.getWhs(),          "C", false,  3);
+                check(errors, pfx + " name",    loc.getLocName(),      "D", false, 60);
+                check(errors, pfx + " region",  loc.getRegion(),       "C", false, 40);
+                check(errors, pfx + " address", loc.getPhysicalAddr1(),"D", false, 60);
+            }
+        }
+
+        if (req.getUsers() != null) {
+            for (int i = 0; i < req.getUsers().size(); i++) {
+                UserDTO u = req.getUsers().get(i);
+                String pfx = "User " + (i + 1);
+                check(errors, pfx + " username",  u.getUsername(),  "user", true,  30);
+                check(errors, pfx + " full name", u.getFullName(),  "D",    false, 80);
+                check(errors, pfx + " email",     u.getEmail(),     "E",    false, 100);
+                check(errors, pfx + " default loc", u.getDefaultLoc(), "C", false,  3);
+            }
+        }
+
+        if (!errors.isEmpty())
+            throw new IllegalArgumentException(String.join("; ", errors));
+    }
+
+    private void check(List<String> errors, String label, String value, String type,
+                       boolean required, int maxLen) {
+        String msg = validationService.validate(label, value, type, required);
+        if (msg != null) { errors.add(msg); return; }
+        if (value != null && value.length() > maxLen)
+            errors.add(label + " must be " + maxLen + " characters or fewer");
     }
 
     // ── Save / update draft ───────────────────────────────────────────────────
     @Transactional
     public RegistrationResponse save(Long partnerId, Long existingId, RegistrationRequest req) {
+        validateRequest(req);
         Registration reg = existingId != null
                 ? regRepo.findById(existingId).orElseThrow()
                 : new Registration();
@@ -91,6 +155,23 @@ public class RegistrationService {
         return toResponse(reg);
     }
 
+    // ── Delete draft ─────────────────────────────────────────────────────────
+    @Transactional
+    public void delete(Long id, Long requestingPartnerId) {
+        Registration reg = regRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Registration not found: " + id));
+
+        if (!reg.getPartnerId().equals(requestingPartnerId))
+            throw new IllegalStateException("You can only delete your own registrations");
+
+        if (!"DRAFT".equals(reg.getStatus()))
+            throw new IllegalStateException("Only DRAFT registrations can be deleted");
+
+        locRepo.deleteByRegistrationId(id);
+        userRepo.deleteByRegistrationId(id);
+        regRepo.deleteById(id);
+    }
+
     // ── Submit ────────────────────────────────────────────────────────────────
     @Transactional
     public RegistrationResponse submit(Long id, Long actorId, String actorName) {
@@ -98,12 +179,52 @@ public class RegistrationService {
         if (!"DRAFT".equals(reg.getStatus()) && !"DECLINED_IMPLY".equals(reg.getStatus())
                 && !"DECLINED_XACT".equals(reg.getStatus()))
             throw new IllegalStateException("Can only submit DRAFT or DECLINED registrations");
+
+        // Validate required fields before changing status — covers direct Dashboard submits
+        validateForSubmission(id, reg);
+
         String prev = reg.getStatus();
         String next = "PRO".equals(reg.getPackageType()) ? "PENDING_IMPLY" : "PENDING_XACT";
         reg.setStatus(next); reg.setSubmittedAt(LocalDateTime.now()); reg.setDeclineReason(null);
         regRepo.save(reg);
         logEvent(id, actorId, actorName, "SUBMITTED", prev, next, null);
         return toResponse(reg);
+    }
+
+    private void validateForSubmission(Long id, Registration reg) {
+        List<String> errors = new ArrayList<>();
+
+        if (reg.getCompanyName() == null || reg.getCompanyName().isBlank())
+            errors.add("Company name is required");
+
+        if (reg.getCompanyEmail() == null || reg.getCompanyEmail().isBlank())
+            errors.add("Company email is required");
+
+        if (reg.getTelephone() == null || reg.getTelephone().isBlank())
+            errors.add("Telephone number is required");
+
+        var locs = locRepo.findByRegistrationId(id);
+        if (locs.isEmpty()) {
+            errors.add("At least one location is required");
+        } else {
+            for (int i = 0; i < locs.size(); i++) {
+                if (locs.get(i).getLoc() == null || locs.get(i).getLoc().isBlank())
+                    errors.add("Location " + (i + 1) + " code is required");
+            }
+        }
+
+        var users = userRepo.findByRegistrationId(id);
+        if (users.isEmpty()) {
+            errors.add("At least one user is required");
+        } else {
+            for (int i = 0; i < users.size(); i++) {
+                if (users.get(i).getUsername() == null || users.get(i).getUsername().isBlank())
+                    errors.add("User " + (i + 1) + " username is required");
+            }
+        }
+
+        if (!errors.isEmpty())
+            throw new IllegalArgumentException(String.join("; ", errors));
     }
 
     // ── Imply approve ─────────────────────────────────────────────────────────

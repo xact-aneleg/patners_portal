@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/export/**", "/api/import/**", "/api/conversion/**",
                                 "/api/lookup/**", "/api/health").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/api/portal/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // 👈 ADD THIS
                         .anyRequest().authenticated())

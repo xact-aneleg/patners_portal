@@ -3,14 +3,19 @@
 /* Left panel */
 .left {
   width:420px; flex-shrink:0;
-  background:linear-gradient(160deg,#2d8828 0%,#1a5216 100%);
+  background:var(--sidebar-bg);
   padding:48px 44px; display:flex; flex-direction:column;
   position:relative; overflow:hidden;
 }
 .left::before {
   content:''; position:absolute; top:-100px; right:-100px;
   width:300px; height:300px; border-radius:50%;
-  background:rgba(255,255,255,0.04);
+  background:rgba(58,170,53,0.08);
+}
+.left::after {
+  content:''; position:absolute; bottom:-80px; left:-80px;
+  width:220px; height:220px; border-radius:50%;
+  background:rgba(58,170,53,0.05);
 }
 
 /* Logo */
