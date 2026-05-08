@@ -20,10 +20,10 @@
   border-bottom:1px solid rgba(255,255,255,0.07);
   overflow:hidden;
 }
-.brandLogo { width:28px; height:28px; flex-shrink:0; filter:brightness(0) invert(1); }
+.brandLogo { width:28px; height:28px; flex-shrink:0; }
 .brandText { display:flex; align-items:baseline; gap:0; white-space:nowrap; transition:opacity .15s; }
 .bx { font-size:15px; font-weight:800; color:#fff; letter-spacing:.04em; }
-.be { font-size:15px; font-weight:800; color:#3aaa35; letter-spacing:.04em; }
+.be { font-size:15px; font-weight:800; color:#fbba00; letter-spacing:.04em; }
 .collapsed .brandText { opacity:0; width:0; }
 
 /* Collapse button */
@@ -57,8 +57,9 @@
 
 .navItem {
   display:flex; align-items:center; gap:10px;
-  width:100%; padding:10px 16px;
-  background:none; border:none; border-left:3px solid transparent;
+  width:calc(100% - 16px); margin:1px 8px;
+  padding:9px 12px; border-radius:6px;
+  background:none; border:none;
   text-align:left; cursor:pointer; font-family:inherit;
   color:rgba(255,255,255,0.7); font-size:13px; font-weight:500;
   white-space:nowrap; overflow:hidden; position:relative;
@@ -66,8 +67,7 @@
 }
 .navItem:hover { background:rgba(255,255,255,0.08); color:#fff; }
 .navActive {
-  background:rgba(58,170,53,0.18) !important;
-  border-left-color:#3aaa35 !important;
+  background: var(--color-primary, #3aaa35) !important;
   color:#fff !important; font-weight:600;
 }
 .navIcon { display:flex; align-items:center; justify-content:center; width:20px; flex-shrink:0; }
@@ -154,10 +154,10 @@
 .hamburger svg { width:17px; height:17px; }
 .mobileBrand { display:flex; align-items:baseline; gap:0; }
 
-.pageHeader { margin:20px 0 0; padding:0 28px 14px; border-bottom:1px solid var(--border-color); }
-.pageTitle { font-size:1.4rem; font-weight:700; color:var(--color-text); }
+.pageHeader { margin:24px 0 0; padding:0 28px 16px; border-bottom:1px solid var(--border-color); }
+.pageTitle { font-size:1.5rem; font-weight:700; color:var(--color-text); }
 .pageSub   { font-size:13px; color:var(--color-text-muted); margin-top:2px; }
-.pageContent { padding:20px 28px; }
+.pageContent { padding:24px 28px; }
 
 /* ── Mobile ── */
 @media (max-width:768px) {

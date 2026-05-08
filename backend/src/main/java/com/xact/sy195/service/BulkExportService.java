@@ -65,9 +65,20 @@ public class BulkExportService {
                 case "E" -> p.add(cb.equal(root.get("trackByForeignCurrency"), "N"));
                 case "F" -> p.add(cb.equal(root.get("trackByForeignCurrency"), "Y"));
             }
+            // loc VARCHAR(3) — location range
+            if (f.getStartLoc() != null && !f.getStartLoc().isEmpty())
+                p.add(cb.between(root.get("loc"), f.getStartLoc(), f.getEndLoc()));
             // dl_cat VARCHAR(5)
             if (Boolean.TRUE.equals(f.getFilterCat()) && f.getStartCat() != null)
                 p.add(cb.between(root.get("dlCat"), f.getStartCat(), f.getEndCat()));
+            // controlled_by VARCHAR(10)
+            if (Boolean.TRUE.equals(f.getFilterController()) && f.getStartController() != null)
+                p.add(cb.between(root.get("controlledBy"), f.getStartController(), f.getEndController()));
+            // class VARCHAR(3) — mapped as classCode
+            if (Boolean.TRUE.equals(f.getFilterClass()) && f.getStartClass() != null)
+                p.add(cb.between(root.get("classCode"), f.getStartClass(), f.getEndClass()));
+            // inv_type VARCHAR(1)
+            if (!"ALL".equals(f.getInvType())) p.add(cb.equal(root.get("invType"), f.getInvType()));
             // rep_code/mkt_rep VARCHAR(5)
             if (Boolean.TRUE.equals(f.getFilterRep())) {
                 String repField = "R".equals(f.getRepType()) ? "repCode" : "mktRep";
@@ -88,7 +99,15 @@ public class BulkExportService {
             List<Predicate> p = new ArrayList<>();
             // stk_code VARCHAR(16)
             p.add(cb.between(root.get("stkCode"), f.getStartStkCode(), f.getEndStkCode()));
-            // stk_grp VARCHAR(5)
+            // master_acct VARCHAR(1)
+            switch (f.getMasterAcct()) {
+                case "E" -> p.add(cb.equal(root.get("masterAcct"), "N"));
+                case "M" -> p.add(cb.equal(root.get("masterAcct"), "Y"));
+                case "S" -> { p.add(cb.equal(root.get("masterAcct"), "N"));
+                              p.add(cb.notEqual(root.get("linkedTo"), root.get("stkCode"))); }
+            }
+            // stk_grp VARCHAR(5) — G=group range, C=code range (default)
+            // SG/S/D modes require sub-group/section/division table joins (not yet JPA-mapped)
             if ("G".equals(f.getStkSelection()) && f.getStartStkGrp() != null)
                 p.add(cb.between(root.get("stkGrp"), f.getStartStkGrp(), f.getEndStkGrp()));
             // status VARCHAR(1)
@@ -135,6 +154,9 @@ public class BulkExportService {
                 case "S" -> { p.add(cb.equal(root.get("masterAcct"), "N"));
                               p.add(cb.notEqual(root.get("linkedAcct"), root.get("clCode"))); }
             }
+            // cl_cat VARCHAR(5)
+            if (Boolean.TRUE.equals(f.getFilterCat()) && f.getStartCat() != null)
+                p.add(cb.between(root.get("clCat"), f.getStartCat(), f.getEndCat()));
             if (!"ALL".equals(f.getStatus())) p.add(cb.equal(root.get("status"), f.getStatus()));
             switch (f.getForeignTracked()) {
                 case "E" -> p.add(cb.equal(root.get("trackByForeignCurrency"), "N"));

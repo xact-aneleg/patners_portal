@@ -32,6 +32,7 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className={s.root}>
+      <div className={s.card}>
       {/* ── Left green panel ── */}
       <div className={s.left}>
         <div className={s.logo}>
@@ -92,6 +93,7 @@ export default function LoginPage({ onLogin }) {
 
       {/* ── Right white panel ── */}
       <div className={s.right}>
+
         <div className={s.formWrap}>
           <div className={s.adminBadge}>PARTNER PORTAL</div>
           <h2 className={s.formTitle}>Sign in to your account</h2>
@@ -147,6 +149,7 @@ export default function LoginPage({ onLogin }) {
             <div className={s.demoNote}>Password: <code>password123</code></div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

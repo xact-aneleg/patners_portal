@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { getRegistration } from '../api/portalApi.js'
+import { FileText, Download } from 'lucide-react'
+import { getRegistration, listDocuments, getDocumentUrl } from '../api/portalApi.js'
 import StatusPill from '../components/StatusPill.jsx'
 import s from './Portal.module.css'
 
@@ -33,13 +34,17 @@ function KV({ label, value }) {
 }
 
 export default function RegistrationDetail({ regId, onBack }) {
-  const [reg, setReg] = useState(null)
-  const [err, setErr] = useState(null)
+  const [reg,  setReg]  = useState(null)
+  const [err,  setErr]  = useState(null)
+  const [docs, setDocs] = useState([])
 
   useEffect(() => {
     getRegistration(regId)
       .then(setReg)
       .catch(() => setErr('Failed to load registration'))
+    listDocuments(regId)
+      .then(setDocs)
+      .catch(() => {})
   }, [regId])
 
   if (err)  return <div className={s.alertErr}>{err}</div>
@@ -175,6 +180,29 @@ export default function RegistrationDetail({ regId, onBack }) {
           </div>
         </div>
       )}
+
+      {/* ── Documents ── */}
+      <div className={s.sectionCard}>
+        <div className={s.sectionHead}>Supporting documents ({docs.length})</div>
+        <div style={{padding:'12px 16px', display:'flex', flexDirection:'column', gap:8}}>
+          {docs.length === 0
+            ? <div style={{fontSize:13,color:'var(--color-text-muted)',textAlign:'center',padding:'12px 0'}}>No documents attached</div>
+            : docs.map(d => (
+              <div key={d.id} className={s.docRow}>
+                <FileText size={15} style={{color:'var(--color-primary)',flexShrink:0}}/>
+                <span className={s.docName}>{d.fileName}</span>
+                <span className={s.docMeta}>{d.fileSize ? (d.fileSize / 1024).toFixed(0) + ' KB' : ''}</span>
+                <a href={getDocumentUrl(regId, d.id)}
+                   download={d.fileName}
+                   className={s.docDownload}
+                   target="_blank" rel="noreferrer">
+                  <Download size={13}/> Download
+                </a>
+              </div>
+            ))
+          }
+        </div>
+      </div>
 
       {/* ── Workflow timeline ── */}
       {events.length > 0 && (

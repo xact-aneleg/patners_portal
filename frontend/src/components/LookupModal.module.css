@@ -1,0 +1,160 @@
+/* ── Overlay ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Dialog ── */
+.dialog {
+  width: 700px; max-width: 96vw; max-height: 88vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column;
+  font-family: inherit;
+  overflow: hidden;
+}
+
+/* ── Title bar — sidebar dark ── */
+.titleBar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: #364553;
+  flex-shrink: 0;
+}
+
+.titleText {
+  flex: 1; color: #fff;
+  font-size: 13px; font-weight: 600;
+}
+
+.closeBtn {
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.75);
+  cursor: pointer; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; padding: 0;
+  transition: background 0.1s;
+}
+.closeBtn:hover { background: rgba(220,53,69,0.7); color: #fff; }
+
+/* ── Module heading ── */
+.heading {
+  text-align: center;
+  color: #3aaa35;
+  font-weight: 800; font-size: 12px; letter-spacing: 0.06em;
+  padding: 7px 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* ── Column headers ── */
+.thead {
+  display: flex;
+  background: var(--bg-app, #f4f6f8);
+  border-bottom: 2px solid #3aaa35;
+  flex-shrink: 0;
+}
+
+.th {
+  padding: 5px 8px;
+  font-size: 11px; font-weight: 700;
+  color: var(--color-text, #1a2733);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  border-right: 1px solid var(--border-color, #d1d9e0);
+  overflow: hidden; white-space: nowrap; min-width: 0;
+}
+.th:last-child { border-right: none; }
+
+/* ── Scrollable body ── */
+.tbody {
+  flex: 1; overflow-y: auto;
+  min-height: 0; max-height: 400px;
+  background: var(--bg-surface);
+}
+
+.tr {
+  display: flex; cursor: pointer;
+  border-bottom: 1px solid var(--border-color, #e8e8e8);
+  transition: background 0.06s;
+}
+.trOdd  { background: var(--bg-app, #f8fafb); }
+.trEven { background: var(--bg-surface, #fff); }
+.trSel  { background: rgba(58,170,53,0.14) !important; border-left: 3px solid #3aaa35; }
+.tr:hover:not(.trSel) { background: rgba(58,170,53,0.07); }
+
+.td {
+  padding: 5px 8px;
+  font-size: 12px; color: var(--color-text, #1a2733);
+  border-right: 1px solid var(--border-color, #eee);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.td:last-child { border-right: none; }
+
+/* ── Filter row ── */
+.filterRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.filterLabel {
+  font-size: 12px; color: var(--color-text-muted, #6b7c8d);
+  font-weight: 600; white-space: nowrap;
+}
+
+.filterInput {
+  flex: 1; height: 32px;
+  border: 1px solid var(--border-color, #d1d9e0);
+  border-radius: 5px;
+  padding: 0 10px;
+  font-size: 13px; font-weight: 600;
+  font-family: inherit;
+  background: var(--bg-surface);
+  color: var(--color-text, #1a2733);
+  outline: none;
+  text-transform: uppercase;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.filterInput::placeholder {
+  text-transform: none;
+  font-weight: 400;
+  color: var(--color-text-muted, #6b7c8d);
+  font-size: 12px;
+}
+.filterInput:focus {
+  border-color: #3aaa35;
+  box-shadow: 0 0 0 3px rgba(58,170,53,0.15);
+}
+
+/* ── Status bar ── */
+.statusBar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 12px;
+  background: var(--bg-app, #f4f6f8);
+  border-top: 1px solid var(--border-color);
+  font-size: 11px; color: var(--color-text-muted, #6b7c8d);
+  flex-shrink: 0;
+}
+
+/* ── Empty / loading states ── */
+.centerMsg {
+  padding: 36px 24px;
+  text-align: center;
+  color: var(--color-text-muted, #6b7c8d);
+  font-size: 13px;
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .dialog { max-height: 95vh; border-radius: 0; }
+  .tbody  { max-height: 55vh; }
+}

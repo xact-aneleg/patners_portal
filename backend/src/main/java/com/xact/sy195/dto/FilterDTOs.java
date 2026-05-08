@@ -8,7 +8,7 @@ public class FilterDTOs {
         private String startAcct    = "!";
         private String endAcct      = "~";
         // Master account filter
-        private String masterAcct   = "A";   // A=all E=excl-masters M=master-only
+        private String masterAcct   = "A";   // A=all E=excl-masters M=master-only S=standalone
         private Boolean sortByLoc   = false;
         // Location filter
         private String startLoc     = "";
@@ -17,6 +17,14 @@ public class FilterDTOs {
         private Boolean filterCat   = false;
         private String startCat     = "";
         private String endCat       = "~~~";
+        // Controller filter — real field: controlled_by VARCHAR(10)
+        private Boolean filterController = false;
+        private String startController   = "";
+        private String endController     = "~~~";
+        // Class filter — real field: class VARCHAR(3)
+        private Boolean filterClass = false;
+        private String startClass   = "";
+        private String endClass     = "~~~";
         // Rep filter — real field: rep_code VARCHAR(5)
         private Boolean filterRep   = false;
         private String repType      = "R";   // R=rep_code M=mkt_rep
@@ -26,6 +34,8 @@ public class FilterDTOs {
         private String status       = "ALL";
         // Credit status — real field: cr_status VARCHAR(4)
         private String crStatus     = "ALL"; // ALL GOOD HOLD COD
+        // Invoice type — real field: inv_type VARCHAR(1)
+        private String invType      = "ALL"; // ALL I=Invoice C=Cash T=Tax O=Other
         // Balance — real field: balance NUMERIC(13,2)
         private String balance      = "ALL"; // ALL B=non-zero Z=zero
         // Foreign currency — real field: track_by_foreign_currency VARCHAR(1)
@@ -43,6 +53,15 @@ public class FilterDTOs {
         private String stkSelection = "C";
         private String startStkGrp  = "";
         private String endStkGrp    = "~~~";
+        // Sub-group filter — real field: sub_grp VARCHAR(5) in st04sg_sub_grp
+        private String startSubGrp  = "";
+        private String endSubGrp    = "~~~";
+        // Section filter — real field: section VARCHAR(5) in st04s_grp_sec
+        private String startSection = "";
+        private String endSection   = "~~~";
+        // Division filter — real field: division VARCHAR(5) in st04d_grp_div
+        private String startDiv     = "";
+        private String endDiv       = "~~~";
         // Status — real field: status VARCHAR(1)
         private String status       = "ALL";
         // Flags — all VARCHAR(1) in real schema

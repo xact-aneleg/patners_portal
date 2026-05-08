@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
-  Users, Package, Building2, BookOpen, ArrowRightLeft, Globe,
+  Users, Package, Building2, BookOpen, Globe,
   PanelLeftClose, PanelLeftOpen, Sun, Moon, Monitor,
 } from 'lucide-react'
 import { useTheme } from './context/ThemeContext.jsx'
 import DebtorsPage    from './pages/DebtorsPage.jsx'
 import StockPage      from './pages/StockPage.jsx'
 import { CreditorsPage, GLPage } from './pages/OtherPages.jsx'
-import ConversionPage from './pages/ConversionPage.jsx'
 import PortalApp      from './portal/PortalApp.jsx'
 import api            from './api/bulkApi.js'
 import styles         from './App.module.css'
@@ -21,11 +20,10 @@ const MODULES = [
 ]
 
 const PAGE_TITLES = {
-  debtors:    { title:'Debtors',         sub:'Export or import debtor accounts from dl01_mast' },
-  stock:      { title:'Stock',           sub:'Export or import stock codes from st01_mast' },
-  creditors:  { title:'Creditors',       sub:'Export or import creditor accounts from cl01_mast' },
-  gl:         { title:'General ledger',  sub:'Export or import GL accounts from gl01_mast' },
-  conversion: { title:'Data conversion', sub:'Full table export and conversion import — sy999' },
+  debtors:   { title:'Debtors',        sub:'Export or import debtor accounts from dl01_mast' },
+  stock:     { title:'Stock',          sub:'Export or import stock codes from st01_mast' },
+  creditors: { title:'Creditors',      sub:'Export or import creditor accounts from cl01_mast' },
+  gl:        { title:'General ledger', sub:'Export or import GL accounts from gl01_mast' },
 }
 
 export default function App() {
@@ -63,8 +61,7 @@ export default function App() {
 
   if (mode === 'portal') return <PortalApp onBack={() => setMode('sy195')} />
 
-  const ActivePage = MODULES.find(m => m.id === active)?.page
-    ?? (active === 'conversion' ? ConversionPage : null)
+  const ActivePage = MODULES.find(m => m.id === active)?.page ?? null
 
   return (
     <div className={styles.root}>
@@ -102,17 +99,6 @@ export default function App() {
               <span className={styles.navSub}>{m.sub}</span>
             </button>
           ))}
-
-          <div className={styles.sbDivider}/>
-          <p className={styles.sbLabel}>Conversion</p>
-          <button
-            className={`${styles.navItem} ${active==='conversion'?styles.navActive:''}`}
-            data-label="Data conversion"
-            onClick={() => navigate('conversion')}>
-            <span className={styles.navIcon}><ArrowRightLeft size={20}/></span>
-            <span className={styles.navLabel}>Data conversion</span>
-            <span className={styles.navSub}>sy999</span>
-          </button>
 
           <div className={styles.sbDivider}/>
           <p className={styles.sbLabel}>Switch</p>

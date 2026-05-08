@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Sparkles, X, Wand2 } from 'lucide-react'
 import api from '../api/bulkApi.js'
 import LookupField from '../components/LookupField.jsx'
@@ -14,14 +14,22 @@ export default function DebtorsPage() {
   const [drag,    setDrag]    = useState(false)
 
   const [f, setF] = useState({
-    startAcct:'!', endAcct:'~',
+    startAcct:'', endAcct:'',
     masterAcct:'A', delAcct:'A',
-    status:'ALL', crStatus:'ALL',
+    status:'ALL', crStatus:'ALL', invType:'ALL',
     balance:'ALL', foreignTracked:'ALL',
     filterCat:false, startCat:'', endCat:'~~~',
+    filterController:false, startController:'', endController:'~~~',
+    filterClass:false, startClass:'', endClass:'~~~',
     filterRep:false, repType:'R', startRep:'', endRep:'~~~',
   })
   const set = (k,v) => setF(p => ({...p,[k]:v}))
+
+  useEffect(() => {
+    api.getCodeRange('debtors')
+      .then(r => setF(p => ({...p, startAcct: r.first, endAcct: r.last})))
+      .catch(() => setF(p => ({...p, startAcct: '!', endAcct: '~'})))
+  }, [])
 
   // AI filter assistant state
   const [aiOpen,   setAiOpen]   = useState(false)
@@ -213,6 +221,68 @@ export default function DebtorsPage() {
                   <option value="E">Local currency only</option>
                 </select>
               </div>
+              <div className={s.field}>
+                <label>Invoice type</label>
+                <select value={f.invType} onChange={e=>set('invType',e.target.value)}>
+                  <option value="ALL">All</option>
+                  <option value="I">Invoice</option>
+                  <option value="C">Cash</option>
+                  <option value="T">Tax</option>
+                  <option value="O">Other</option>
+                </select>
+              </div>
+              {/* Category range */}
+              <div className={s.field}>
+                <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer'}}>
+                  <input type="checkbox" checked={f.filterCat} onChange={e=>set('filterCat',e.target.checked)}/>
+                  Filter by category
+                </label>
+              </div>
+              {f.filterCat&&<div className={s.row2}>
+                <div className={s.field}><label>Start category</label><input value={f.startCat} onChange={e=>set('startCat',e.target.value)} placeholder="Start"/></div>
+                <div className={s.field}><label>End category</label><input value={f.endCat} onChange={e=>set('endCat',e.target.value)} placeholder="End"/></div>
+              </div>}
+              {/* Controller range */}
+              <div className={s.field}>
+                <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer'}}>
+                  <input type="checkbox" checked={f.filterController} onChange={e=>set('filterController',e.target.checked)}/>
+                  Filter by controller
+                </label>
+              </div>
+              {f.filterController&&<div className={s.row2}>
+                <div className={s.field}><label>Start controller</label><input value={f.startController} onChange={e=>set('startController',e.target.value)} placeholder="Start"/></div>
+                <div className={s.field}><label>End controller</label><input value={f.endController} onChange={e=>set('endController',e.target.value)} placeholder="End"/></div>
+              </div>}
+              {/* Class range */}
+              <div className={s.field}>
+                <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer'}}>
+                  <input type="checkbox" checked={f.filterClass} onChange={e=>set('filterClass',e.target.checked)}/>
+                  Filter by class
+                </label>
+              </div>
+              {f.filterClass&&<div className={s.row2}>
+                <div className={s.field}><label>Start class</label><input value={f.startClass} onChange={e=>set('startClass',e.target.value)} placeholder="Start"/></div>
+                <div className={s.field}><label>End class</label><input value={f.endClass} onChange={e=>set('endClass',e.target.value)} placeholder="End"/></div>
+              </div>}
+              {/* Rep range */}
+              <div className={s.field}>
+                <label style={{display:'flex',alignItems:'center',gap:'6px',cursor:'pointer'}}>
+                  <input type="checkbox" checked={f.filterRep} onChange={e=>set('filterRep',e.target.checked)}/>
+                  Filter by rep
+                </label>
+              </div>
+              {f.filterRep&&<>
+                <div className={s.field}><label>Rep type</label>
+                  <select value={f.repType} onChange={e=>set('repType',e.target.value)}>
+                    <option value="R">Sales rep</option>
+                    <option value="M">Market rep</option>
+                  </select>
+                </div>
+                <div className={s.row2}>
+                  <div className={s.field}><label>Start rep</label><input value={f.startRep} onChange={e=>set('startRep',e.target.value)} placeholder="Start"/></div>
+                  <div className={s.field}><label>End rep</label><input value={f.endRep} onChange={e=>set('endRep',e.target.value)} placeholder="End"/></div>
+                </div>
+              </>}
             </div>
           </div>
 

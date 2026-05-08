@@ -144,6 +144,27 @@ CREATE TABLE IF NOT EXISTS public.pp_conversion_jobs (
     created_at          TIMESTAMP       DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS public.pp_reg_documents (
+    id              BIGSERIAL       PRIMARY KEY,
+    registration_id INTEGER         NOT NULL REFERENCES public.pp_registrations(id) ON DELETE CASCADE,
+    file_name       VARCHAR(255)    NOT NULL,
+    content_type    VARCHAR(100),
+    file_size       BIGINT,
+    file_data       BYTEA           NOT NULL,
+    uploaded_by     VARCHAR(255),
+    uploaded_at     TIMESTAMP       DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.pp_notifications (
+    id              BIGSERIAL       PRIMARY KEY,
+    recipient_id    INTEGER         NOT NULL REFERENCES public.pp_partners(id) ON DELETE CASCADE,
+    registration_id INTEGER         REFERENCES public.pp_registrations(id) ON DELETE CASCADE,
+    type            VARCHAR(50)     NOT NULL,
+    message         TEXT            NOT NULL,
+    is_read         BOOLEAN         NOT NULL DEFAULT FALSE,
+    created_at      TIMESTAMP       DEFAULT NOW()
+);
+
 -- ── Seed demo portal users ────────────────────────────────────────────────────
 -- All three accounts use password: password123
 -- After first backend start, call this URL to fix BCrypt hashes:

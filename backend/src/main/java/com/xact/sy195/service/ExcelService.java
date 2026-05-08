@@ -69,6 +69,9 @@ public class ExcelService {
         put("desc1",        new String[]{"D(40)", "",    "desc_1"});
         put("desc2",        new String[]{"D(40)", "",    "desc_2"});
         put("desc3",        new String[]{"D(40)", "",    "desc_3"});
+        put("desc4",        new String[]{"D(40)", "",    "desc_4"});
+        put("desc5",        new String[]{"D(40)", "",    "desc_5"});
+        put("desc6",        new String[]{"D(40)", "",    "desc_6"});
         put("barcode",      new String[]{"C(16)", "",    "barcode"});
         put("status",       new String[]{"C(1)",  "A",   "status"});
         put("masterAcct",   new String[]{"C(1)",  "N",   "master_acct"});
@@ -87,7 +90,11 @@ public class ExcelService {
         put("leadTime",     new String[]{"N(5,2)", "0",  "lead_time"});
         put("lineType",     new String[]{"C(1)",  "",    "line_type"});
         put("reOrder",      new String[]{"N",     "0",   "re_order"});
+        put("reOrderPerc",  new String[]{"N",     "0",   "re_order_perc"});
+        put("listGpCat",    new String[]{"C(1)",  "",    "list_gp_cat"});
         put("vatInd",       new String[]{"C(1)",  "S",   "vat_ind"});
+        put("hsCode",       new String[]{"C(13)", "",    "hs_code"});
+        put("levyCode",     new String[]{"C(6)",  "",    "levy_code"});
         put("createDate",   new String[]{"D",     "",    "create_date"});
     }};
 

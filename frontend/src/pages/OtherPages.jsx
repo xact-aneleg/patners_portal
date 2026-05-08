@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import api from '../api/bulkApi.js'
 import LookupField from '../components/LookupField.jsx'
 import s from './MobilePage.module.css'
@@ -8,8 +8,14 @@ function SimplePage({module, title, startKey, endKey, downloadName, filters}) {
   const [busy,setBusy]=useState(false)
   const [toast,setToast]=useState(null)
   const [file,setFile]=useState(null)
-  const [f,setF]=useState({[startKey]:'!',[endKey]:'~',...(filters||{})})
+  const [f,setF]=useState({[startKey]:'',[endKey]:'',...(filters||{})})
   const set=(k,v)=>setF(p=>({...p,[k]:v}))
+
+  useEffect(() => {
+    api.getCodeRange(module)
+      .then(r => setF(p => ({...p, [startKey]: r.first, [endKey]: r.last})))
+      .catch(() => setF(p => ({...p, [startKey]: '!', [endKey]: '~'})))
+  }, [module])
 
   async function doExport(){setBusy(true);try{const blob=await api.exportModule(module,f);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=downloadName+'.xlsx';a.click();setToast({ok:true,msg:'Exported'})}catch{setToast({ok:false,msg:'Export failed'})}finally{setBusy(false)}}
   async function doTemplate(){setBusy(true);try{const blob=await api.downloadTemplate(module);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=downloadName+'_template.xlsx';a.click()}catch{}finally{setBusy(false)}}
@@ -35,12 +41,14 @@ function SimplePage({module, title, startKey, endKey, downloadName, filters}) {
           <div className={s.stack}>
             <div className={s.field}><label>Status</label><select value={f.status||'ALL'} onChange={e=>set('status',e.target.value)}><option value="ALL">All</option><option value="A">Active</option><option value="I">Inactive</option></select></div>
             {module==='creditors'&&<>
+              <div className={s.field}><label>Foreign currency</label><select value={f.foreignTracked||'ALL'} onChange={e=>set('foreignTracked',e.target.value)}><option value="ALL">All</option><option value="F">Foreign tracked</option><option value="E">Local only</option></select></div>
               <div className={s.field}><label>Inter-company</label><select value={f.interCo||'ALL'} onChange={e=>set('interCo',e.target.value)}><option value="ALL">All</option><option value="Y">Inter-company only</option><option value="N">Exclude inter-co</option></select></div>
               <div className={s.field}><label>Import accounts</label><select value={f.importAccts||'ALL'} onChange={e=>set('importAccts',e.target.value)}><option value="ALL">All</option><option value="Y">Import accounts only</option><option value="N">Exclude import</option></select></div>
             </>}
             {module==='gl'&&<>
               <div className={s.field}><label>Account type</label><select value={f.acctType||'A'} onChange={e=>set('acctType',e.target.value)}><option value="A">All</option><option value="B">Balance sheet</option><option value="P">P&amp;L</option></select></div>
               <div className={s.field}><label>Post / sub-total</label><select value={f.postSubTot||'A'} onChange={e=>set('postSubTot',e.target.value)}><option value="A">All</option><option value="P">Posting accounts</option><option value="S">Sub-totals</option></select></div>
+              <div className={s.field}><label>Budget based on</label><select value={f.budgetBasedOn||'ALL'} onChange={e=>set('budgetBasedOn',e.target.value)}><option value="ALL">All</option><option value="S">Statistics</option><option value="I">Input</option><option value="L">Last year</option></select></div>
             </>}
           </div>
         </div>
@@ -67,7 +75,7 @@ function SimplePage({module, title, startKey, endKey, downloadName, filters}) {
 }
 
 export function CreditorsPage() {
-  return <SimplePage module="creditors" title="Creditors" startKey="startAcct" endKey="endAcct" downloadName="cl01_mast" filters={{status:'ALL',interCo:'ALL',importAccts:'ALL',masterAccount:'A'}}/>
+  return <SimplePage module="creditors" title="Creditors" startKey="startAcct" endKey="endAcct" downloadName="cl01_mast" filters={{status:'ALL',foreignTracked:'ALL',interCo:'ALL',importAccts:'ALL',masterAccount:'A'}}/>
 }
 export function GLPage() {
   return <SimplePage module="gl" title="General Ledger" startKey="startCode" endKey="endCode" downloadName="gl01_mast" filters={{status:'ALL',acctType:'A',postSubTot:'A',budgetBasedOn:'ALL'}}/>

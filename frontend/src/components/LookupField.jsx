@@ -1,20 +1,26 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
+import LookupModal from './LookupModal.jsx'
 import styles from './LookupField.module.css'
 
+const MODAL_MODULES = new Set(['debtors', 'stock', 'creditors', 'gl'])
+
 export default function LookupField({ label, value, onChange, module, placeholder = 'Search…' }) {
-  const [query,   setQuery]   = useState(value || '')
-  const [results, setResults] = useState([])
-  const [open,    setOpen]    = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [query,      setQuery]      = useState(value || '')
+  const [results,    setResults]    = useState([])
+  const [open,       setOpen]       = useState(false)
+  const [loading,    setLoading]    = useState(false)
+  const [modalOpen,  setModalOpen]  = useState(false)
   const debounceRef   = useRef(null)
   const containerRef  = useRef(null)
   const latestQuery   = useRef('')
 
+  const canModal = MODAL_MODULES.has(module)
+
   // Sync external value in
   useEffect(() => { setQuery(value || '') }, [value])
 
-  // Close on outside click
+  // Close autocomplete dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -37,14 +43,12 @@ export default function LookupField({ label, value, onChange, module, placeholde
       const res = await axios.get(`/api/lookup/${module}`, {
         params: { q: q.toUpperCase(), limit: 15 }
       })
-      // Only update if this is still the latest query (prevents race conditions)
       if (q === latestQuery.current) {
         const data = res.data || []
         setResults(data)
         setOpen(data.length > 0)
       }
-    } catch (err) {
-      console.error('Lookup error:', err)
+    } catch {
       setResults([])
       setOpen(false)
     } finally {
@@ -58,12 +62,7 @@ export default function LookupField({ label, value, onChange, module, placeholde
     onChange(v)
     latestQuery.current = v
     clearTimeout(debounceRef.current)
-    if (!v) {
-      setResults([])
-      setOpen(false)
-      setLoading(false)
-      return
-    }
+    if (!v) { setResults([]); setOpen(false); setLoading(false); return }
     debounceRef.current = setTimeout(() => doSearch(v), 200)
   }
 
@@ -81,6 +80,13 @@ export default function LookupField({ label, value, onChange, module, placeholde
 
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') setOpen(false)
+  }
+
+  const handleModalSelect = (code) => {
+    setQuery(code)
+    onChange(code)
+    setResults([])
+    setOpen(false)
   }
 
   return (
@@ -101,6 +107,16 @@ export default function LookupField({ label, value, onChange, module, placeholde
           ? <span className={styles.spinner} />
           : <span className={styles.icon}><SearchIcon /></span>
         }
+        {canModal && (
+          <button
+            type="button"
+            className={styles.browseBtn}
+            onClick={() => setModalOpen(true)}
+            title="Browse all records"
+          >
+            <SearchIcon />
+          </button>
+        )}
       </div>
       {open && results.length > 0 && (
         <div className={styles.dropdown}>
@@ -117,6 +133,14 @@ export default function LookupField({ label, value, onChange, module, placeholde
           ))}
         </div>
       )}
+      {modalOpen && (
+        <LookupModal
+          module={module}
+          value={value}
+          onSelect={handleModalSelect}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
     </div>
   )
 }
@@ -127,3 +151,4 @@ const SearchIcon = () => (
     <path d="M9.5 9.5L12 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
   </svg>
 )
+

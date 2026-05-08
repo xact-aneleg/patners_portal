@@ -23,6 +23,7 @@ public class RegistrationService {
     private final ConversionJobRepository    jobRepo;
     private final ValidationService          validationService;
     private final CompanyProvisioningService provisioningService;
+    private final NotificationService        notifService;
 
     public RegistrationService(RegistrationRepository regRepo,
                                RegLocationRepository locRepo,
@@ -31,7 +32,8 @@ public class RegistrationService {
                                PartnerRepository partnerRepo,
                                ConversionJobRepository jobRepo,
                                ValidationService validationService,
-                               @Lazy CompanyProvisioningService provisioningService) {
+                               @Lazy CompanyProvisioningService provisioningService,
+                               NotificationService notifService) {
         this.regRepo             = regRepo;
         this.locRepo             = locRepo;
         this.userRepo            = userRepo;
@@ -40,6 +42,7 @@ public class RegistrationService {
         this.jobRepo             = jobRepo;
         this.validationService   = validationService;
         this.provisioningService = provisioningService;
+        this.notifService        = notifService;
     }
 
     // ── Field validation (mirrors frontend CHAR_RULES / Genero sy_lib.4gl) ────
@@ -188,6 +191,17 @@ public class RegistrationService {
         reg.setStatus(next); reg.setSubmittedAt(LocalDateTime.now()); reg.setDeclineReason(null);
         regRepo.save(reg);
         logEvent(id, actorId, actorName, "SUBMITTED", prev, next, null);
+
+        String company = reg.getCompanyName();
+        if ("PRO".equals(reg.getPackageType())) {
+            notifService.notifyByRole("IMPLY", id, "NEW_SUBMISSION",
+                "New Xact Pro registration pending review: " + company,
+                "New registration submitted: " + company);
+        } else {
+            notifService.notifyByRole("XACT_ADMIN", id, "NEW_SUBMISSION",
+                "New Xact Lite registration pending approval: " + company,
+                "New registration submitted: " + company);
+        }
         return toResponse(reg);
     }
 
@@ -235,6 +249,9 @@ public class RegistrationService {
             throw new IllegalStateException("Registration is not pending Imply approval");
         reg.setStatus("PENDING_XACT"); regRepo.save(reg);
         logEvent(id, actorId, actorName, "APPROVED_IMPLY", "PENDING_IMPLY", "PENDING_XACT", comments);
+        notifService.notifyByRole("XACT_ADMIN", id, "ESCALATED",
+            reg.getCompanyName() + " approved by Imply and awaiting XactERP approval",
+            "Registration escalated: " + reg.getCompanyName());
         return toResponse(reg);
     }
 
@@ -246,6 +263,9 @@ public class RegistrationService {
             throw new IllegalStateException("Registration is not pending Imply approval");
         reg.setStatus("DECLINED_IMPLY"); reg.setDeclineReason(reason); regRepo.save(reg);
         logEvent(id, actorId, actorName, "DECLINED_IMPLY", "PENDING_IMPLY", "DECLINED_IMPLY", reason);
+        notifService.notifyPartner(reg.getPartnerId(), id, "DECLINED",
+            "Your registration for " + reg.getCompanyName() + " was declined by Imply" + (reason != null ? ". Reason: " + reason : ""),
+            "Registration declined: " + reg.getCompanyName());
         return toResponse(reg);
     }
 
@@ -270,6 +290,9 @@ public class RegistrationService {
             reg.setStatus("LIVE"); regRepo.save(reg);
             logEvent(id, null, "System", "LIVE", "CONVERTING", "LIVE",
                 "Company database provisioned successfully");
+            notifService.notifyPartner(reg.getPartnerId(), id, "LIVE",
+                "Your registration for " + reg.getCompanyName() + " has been approved and is now LIVE!",
+                "Registration approved: " + reg.getCompanyName() + " is now LIVE!");
         } catch (Exception e) {
             reg.setStatus("CONVERTING"); regRepo.save(reg);
             logEvent(id, null, "System", "CONVERSION_STARTED", "CONVERTING", "CONVERTING",
@@ -286,6 +309,9 @@ public class RegistrationService {
             throw new IllegalStateException("Registration is not pending XactERP approval");
         reg.setStatus("DECLINED_XACT"); reg.setDeclineReason(reason); regRepo.save(reg);
         logEvent(id, actorId, actorName, "DECLINED_XACT", "PENDING_XACT", "DECLINED_XACT", reason);
+        notifService.notifyPartner(reg.getPartnerId(), id, "DECLINED",
+            "Your registration for " + reg.getCompanyName() + " was declined by XactERP" + (reason != null ? ". Reason: " + reason : ""),
+            "Registration declined: " + reg.getCompanyName());
         return toResponse(reg);
     }
 

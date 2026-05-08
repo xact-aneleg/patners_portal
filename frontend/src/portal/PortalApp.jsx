@@ -1,17 +1,19 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
   LayoutDashboard, FilePlus2, ClipboardList, LogOut,
   PanelLeftClose, PanelLeftOpen, Sun, Moon, Monitor,
-  ArrowLeftRight,
+  ArrowLeftRight, ArrowRightLeft, Bell, X,
 } from 'lucide-react'
-import { logout, getSession } from './api/portalApi.js'
+import { logout, getSession, getNotifications, getUnreadCount, markAllRead } from './api/portalApi.js'
 import { useTheme } from '../context/ThemeContext.jsx'
-import LoginPage          from './pages/LoginPage.jsx'
-import PartnerDashboard   from './pages/PartnerDashboard.jsx'
-import RegistrationForm   from './pages/RegistrationForm.jsx'
-import RegistrationDetail from './pages/RegistrationDetail.jsx'
-import ApprovalQueue      from './pages/ApprovalQueue.jsx'
-import AdminDashboard     from './pages/AdminDashboard.jsx'
+import LoginPage           from './pages/LoginPage.jsx'
+import PartnerDashboard    from './pages/PartnerDashboard.jsx'
+import RegistrationForm    from './pages/RegistrationForm.jsx'
+import RegistrationDetail  from './pages/RegistrationDetail.jsx'
+import ApprovalQueue       from './pages/ApprovalQueue.jsx'
+import AdminDashboard      from './pages/AdminDashboard.jsx'
+import NotificationsPage   from './pages/NotificationsPage.jsx'
+import ConversionPage      from '../pages/ConversionPage.jsx'
 import ps from './PortalApp.module.css'
 import xactLogo from '../assets/xact.svg'
 
@@ -21,8 +23,9 @@ const NAV = {
     { id:'new-reg',   label:'New registration', Icon: FilePlus2 },
   ],
   XACT_ADMIN: [
-    { id:'dashboard', label:'All registrations', Icon: LayoutDashboard },
-    { id:'queue',     label:'Approval queue',    Icon: ClipboardList },
+    { id:'dashboard',   label:'All registrations', Icon: LayoutDashboard },
+    { id:'queue',       label:'Approval queue',    Icon: ClipboardList },
+    { id:'conversion',  label:'Data conversion',   Icon: ArrowRightLeft },
   ],
   IMPLY: [
     { id:'queue', label:'Pending review', Icon: ClipboardList },
@@ -47,9 +50,41 @@ export default function PortalApp({ onBack }) {
   const collapsedRef = useRef(false)
   function setCollapsed(v) { collapsedRef.current = v; setCollapsedState(v) }
 
-  const [avatarSrc, setAvatarSrc] = useState(
-    () => localStorage.getItem(AVATAR_KEY) || null
-  )
+  const [avatarSrc,      setAvatarSrc]      = useState(() => localStorage.getItem(AVATAR_KEY) || null)
+  const [unreadCount,    setUnreadCount]    = useState(0)
+  const [notifOpen,      setNotifOpen]      = useState(false)
+  const [notifications,  setNotifications]  = useState([])
+
+  const fetchUnread = useCallback(() => {
+    if (!session) return
+    getUnreadCount().catch(() => 0).then(n => setUnreadCount(n))
+  }, [session])
+
+  useEffect(() => {
+    if (!session) return
+    fetchUnread()
+    const id = setInterval(fetchUnread, 30000)
+    return () => clearInterval(id)
+  }, [session, fetchUnread])
+
+  async function openNotifications() {
+    const opening = !notifOpen
+    setNotifOpen(opening)
+    if (opening) {
+      const data = await getNotifications().catch(() => [])
+      // Dropdown only shows unread, latest 8
+      setNotifications(data.filter(n => !n.read))
+      setUnreadCount(0)
+      markAllRead().catch(() => {})
+    }
+  }
+
+  function goNotifications() {
+    setNotifOpen(false)
+    setViewId(null)
+    setPage('notifications')
+    setMobileOpen(false)
+  }
 
   if (!session) return <LoginPage onLogin={data => { setSession(data); setPage('dashboard') }} />
 
@@ -98,6 +133,10 @@ export default function PortalApp({ onBack }) {
   }
 
   function renderPage() {
+    if (page === 'notifications')
+      return <NotificationsPage />
+    if (page === 'conversion')
+      return <ConversionPage />
     if (page === 'view-reg' && viewId)
       return <RegistrationDetail regId={viewId} onBack={goBack} />
     if (page === 'edit-reg' && viewId && role === 'PARTNER')
@@ -119,9 +158,11 @@ export default function PortalApp({ onBack }) {
     'new-reg':  { title:'New company registration', sub:'Step through the registration form' },
     'view-reg': { title:'Registration detail',      sub:'Full registration and workflow history' },
     'edit-reg': { title:'Edit registration',        sub:'Update your draft registration' },
-    queue:      role==='IMPLY'
-                  ? { title:'Imply approval queue',   sub:'Xact Pro first-stage decisions' }
-                  : { title:'XactERP approval queue', sub:'Pending XactERP approval' },
+    queue:         role==='IMPLY'
+                    ? { title:'Imply approval queue',   sub:'Xact Pro first-stage decisions' }
+                    : { title:'XactERP approval queue', sub:'Pending XactERP approval' },
+    notifications: { title:'Notifications', sub:'Your notification history' },
+    conversion:    { title:'Data conversion', sub:'Full table export and conversion import — sy999' },
   }
   const pt = PAGE_TITLES[page] || { title:'', sub:'' }
   const activePage = (page === 'view-reg' || page === 'edit-reg') ? 'dashboard' : page
@@ -169,6 +210,24 @@ export default function PortalApp({ onBack }) {
             </button>
           ))}
 
+          <div className={ps.sbDivider}/>
+
+            {/* Notification bell */}
+          <button
+            className={`${ps.navItem} ${page === 'notifications' ? ps.navActive : ''}`}
+            data-label="Notifications"
+            onClick={openNotifications}>
+            <span className={ps.navIcon} style={{position:'relative'}}>
+              <Bell size={20}/>
+              {unreadCount > 0 && (
+                <span className={ps.notifBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </span>
+            <span className={ps.navLabel}>
+              Notifications{unreadCount > 0 ? ` (${unreadCount})` : ''}
+            </span>
+          </button>
+
           {onBack && (
             <>
               <div className={ps.sbDivider}/>
@@ -179,6 +238,45 @@ export default function PortalApp({ onBack }) {
             </>
           )}
         </div>
+
+        {/* Notification dropdown — unread only, max 8 */}
+        {notifOpen && (
+          <div className={ps.notifDropdown}>
+            <div className={ps.notifHeader}>
+              <span>New notifications</span>
+              <button className={ps.notifClose} onClick={() => setNotifOpen(false)}><X size={14}/></button>
+            </div>
+
+            {notifications.length === 0
+              ? (
+                <div className={ps.notifCaughtUp}>
+                  <span className={ps.notifCaughtUpIcon}>✓</span>
+                  <span>All caught up!</span>
+                  <span className={ps.notifCaughtUpSub}>No new notifications</span>
+                </div>
+              )
+              : (
+                <div className={ps.notifList}>
+                  {notifications.slice(0, 8).map(n => (
+                    <div key={n.id} className={ps.notifItem}>
+                      <div className={ps.notifDot}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div className={ps.notifMsg}>{n.message}</div>
+                        <div className={ps.notifTime}>
+                          {new Date(n.createdAt).toLocaleDateString('en-ZA', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+
+            <button className={ps.notifViewAll} onClick={goNotifications}>
+              View all notifications →
+            </button>
+          </div>
+        )}
 
         {/* Bottom — theme + sign out + user ── */}
         <div className={ps.sidebarBottom}>

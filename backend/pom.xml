@@ -72,6 +72,12 @@
       <version>2.27.0</version>
     </dependency>
 
+    <!-- Email notifications -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
     <!-- Lombok — boilerplate elimination -->
     <dependency>
       <groupId>org.projectlombok</groupId>

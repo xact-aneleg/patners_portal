@@ -105,9 +105,10 @@ public class ConversionService {
              Workbook wb = new XSSFWorkbook(is)) {
 
             Sheet sheet = wb.getSheetAt(0);
-            Map<String, Integer> headers = readHeaders(sheet.getRow(0));
+            // Row 0=defaults, Row 1=types, Row 2=column names, Row 3+=data (matches ExcelService 3-row header)
+            Map<String, Integer> headers = readHeaders(sheet.getRow(2));
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 3; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (isBlankRow(row)) continue;
                 response.setTotalRows(response.getTotalRows() + 1);
@@ -165,9 +166,9 @@ public class ConversionService {
              Workbook wb = new XSSFWorkbook(is)) {
 
             Sheet sheet = wb.getSheetAt(0);
-            Map<String, Integer> headers = readHeaders(sheet.getRow(0));
+            Map<String, Integer> headers = readHeaders(sheet.getRow(2));
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 3; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (isBlankRow(row)) continue;
                 response.setTotalRows(response.getTotalRows() + 1);
@@ -219,9 +220,9 @@ public class ConversionService {
              Workbook wb = new XSSFWorkbook(is)) {
 
             Sheet sheet = wb.getSheetAt(0);
-            Map<String, Integer> headers = readHeaders(sheet.getRow(0));
+            Map<String, Integer> headers = readHeaders(sheet.getRow(2));
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 3; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (isBlankRow(row)) continue;
                 response.setTotalRows(response.getTotalRows() + 1);
@@ -272,9 +273,9 @@ public class ConversionService {
              Workbook wb = new XSSFWorkbook(is)) {
 
             Sheet sheet = wb.getSheetAt(0);
-            Map<String, Integer> headers = readHeaders(sheet.getRow(0));
+            Map<String, Integer> headers = readHeaders(sheet.getRow(2));
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 3; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (isBlankRow(row)) continue;
                 response.setTotalRows(response.getTotalRows() + 1);

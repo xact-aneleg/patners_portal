@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { Sparkles, X, Wand2 } from 'lucide-react'
-import { createRegistration, updateRegistration, submitRegistration, getRegistration, getAiSuggestions } from '../api/portalApi.js'
+import React, { useState, useEffect, useRef } from 'react'
+import { Sparkles, X, Wand2, Paperclip, FileText, Download, Trash2 } from 'lucide-react'
+import { createRegistration, updateRegistration, submitRegistration, getRegistration, getAiSuggestions,
+         listDocuments, uploadDocument, deleteDocument, getDocumentUrl } from '../api/portalApi.js'
 import s from './Portal.module.css'
 
 const STEPS = [
@@ -98,6 +99,37 @@ export default function RegistrationForm({ regId: initialRegId, onBack, onDone }
 
   // Step 5
   const [users, setUsers] = useState([emptyUser()])
+
+  // Documents
+  const [docs,          setDocs]          = useState([])
+  const [docUploading,  setDocUploading]  = useState(false)
+  const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    if (regId) listDocuments(regId).then(setDocs).catch(() => {})
+  }, [regId])
+
+  async function handleFileChange(e) {
+    const file = e.target.files[0]
+    if (!file || !regId) return
+    setDocUploading(true)
+    try {
+      const doc = await uploadDocument(regId, file)
+      setDocs(prev => [doc, ...prev])
+    } catch (ex) {
+      setErr('Upload failed: ' + (ex.response?.data?.message || ex.message))
+    } finally { setDocUploading(false); e.target.value = '' }
+  }
+
+  async function handleDocDelete(docId) {
+    if (!regId) return
+    try {
+      await deleteDocument(regId, docId)
+      setDocs(prev => prev.filter(d => d.id !== docId))
+    } catch (ex) {
+      setErr('Delete failed: ' + (ex.response?.data?.message || ex.message))
+    }
+  }
 
   // AI assistant
   const [aiOpen,        setAiOpen]        = useState(false)
@@ -198,7 +230,8 @@ export default function RegistrationForm({ regId: initialRegId, onBack, onDone }
       yearEndMonth, vatRate, bankName, bankBranch, bankBranchCode, bankAccount,
       periodGl, periodCb, periodDl, periodSa, periodCl, periodPu,
       systemYearEnd: sysYearEnd,
-      locations: locs, users,
+      locations: locs.filter(l => l.loc?.trim()),
+      users:     users.filter(u => u.username?.trim()),
     }
   }
 
@@ -801,6 +834,44 @@ export default function RegistrationForm({ regId: initialRegId, onBack, onDone }
                 {busy ? 'Submitting…' : '✓ Submit for approval'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ Supporting Documents (shown once regId exists) ══ */}
+      {regId && (
+        <div className={s.formCard}>
+          <div className={s.formCardHead}>
+            <div className={s.formCardTitle}><Paperclip size={15} style={{verticalAlign:'middle',marginRight:6}}/>Supporting documents</div>
+            <div className={s.formCardSub}>Attach CIPC registration, tax clearance, MOI or other supporting docs</div>
+          </div>
+          <div className={s.formCardBody}>
+            <div className={s.docList}>
+              {docs.length === 0 && !docUploading && (
+                <div className={s.docEmpty}>No documents attached yet</div>
+              )}
+              {docs.map(d => (
+                <div key={d.id} className={s.docRow}>
+                  <FileText size={14} style={{color:'var(--color-primary)',flexShrink:0}}/>
+                  <span className={s.docName}>{d.fileName}</span>
+                  <span className={s.docMeta}>{d.fileSize ? (d.fileSize / 1024).toFixed(0) + ' KB' : ''}</span>
+                  <a href={getDocumentUrl(regId, d.id)} download={d.fileName}
+                     className={s.docDownload} target="_blank" rel="noreferrer">
+                    <Download size={12}/> Download
+                  </a>
+                  <button className={s.docDelete} onClick={() => handleDocDelete(d.id)} title="Remove document">
+                    <Trash2 size={12}/>
+                  </button>
+                </div>
+              ))}
+              {docUploading && <div className={s.docEmpty}>Uploading…</div>}
+            </div>
+            <input ref={fileInputRef} type="file" style={{display:'none'}}
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt"
+              onChange={handleFileChange}/>
+            <button className={s.docUploadBtn} onClick={() => fileInputRef.current?.click()} disabled={docUploading}>
+              <Paperclip size={14}/> {docUploading ? 'Uploading…' : 'Attach document'}
+            </button>
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,61 +25,91 @@ public class LookupController {
         this.cl01Repo = cl01Repo; this.gl01Repo = gl01Repo;
     }
 
-    // ── Autocomplete — uses real field names ───────────────────────────────────
+    // ── Lookup (autocomplete + modal) ─────────────────────────────────────────
 
     @GetMapping("/debtors")
     public ResponseEntity<List<Map<String, String>>> lookupDebtors(
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(defaultValue = "15") int limit) {
+            @RequestParam(defaultValue = "200") int limit) {
         var page = PageRequest.of(0, limit, Sort.by("dlCode"));
         String patt = "%" + q.toUpperCase() + "%";
         var results = dl01Repo.findAll(
             (root, query, cb) -> q.isBlank() ? cb.conjunction()
                 : cb.or(cb.like(cb.upper(root.get("dlCode")), patt),
-                        cb.like(cb.upper(root.get("dlName")), patt)), page)   // real field: dl_name
-            .stream().map(r -> Map.of("code", r.getDlCode(), "name", nvl(r.getDlName()))).toList();
+                        cb.like(cb.upper(root.get("dlName")), patt)), page)
+            .stream().map(r -> {
+                Map<String, String> m = new LinkedHashMap<>();
+                m.put("code",     r.getDlCode());
+                m.put("fileCode", nvl(r.getFilingCode()));
+                m.put("name",     nvl(r.getDlName()));
+                m.put("loc",      nvl(r.getLoc()));
+                return m;
+            }).toList();
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/stock")
     public ResponseEntity<List<Map<String, String>>> lookupStock(
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(defaultValue = "15") int limit) {
+            @RequestParam(defaultValue = "200") int limit) {
         var page = PageRequest.of(0, limit, Sort.by("stkCode"));
         String patt = "%" + q.toUpperCase() + "%";
         var results = st01Repo.findAll(
             (root, query, cb) -> q.isBlank() ? cb.conjunction()
                 : cb.or(cb.like(cb.upper(root.get("stkCode")), patt),
-                        cb.like(cb.upper(root.get("desc1")), patt)), page)   // real field: desc_1
-            .stream().map(r -> Map.of("code", r.getStkCode(), "name", nvl(r.getDesc1()))).toList();
+                        cb.like(cb.upper(root.get("desc1")), patt)), page)
+            .stream().map(r -> {
+                Map<String, String> m = new LinkedHashMap<>();
+                String uomQty = nvl(r.getUom()) + "/" +
+                    (r.getUnitQty() != null ? r.getUnitQty().toPlainString() : "");
+                m.put("code",   r.getStkCode());
+                m.put("name",   nvl(r.getDesc1()));
+                m.put("uomQty", uomQty);
+                m.put("status", nvl(r.getStatus()));
+                return m;
+            }).toList();
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/creditors")
     public ResponseEntity<List<Map<String, String>>> lookupCreditors(
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(defaultValue = "15") int limit) {
+            @RequestParam(defaultValue = "200") int limit) {
         var page = PageRequest.of(0, limit, Sort.by("clCode"));
         String patt = "%" + q.toUpperCase() + "%";
         var results = cl01Repo.findAll(
             (root, query, cb) -> q.isBlank() ? cb.conjunction()
                 : cb.or(cb.like(cb.upper(root.get("clCode")), patt),
-                        cb.like(cb.upper(root.get("clName")), patt)), page)   // real field: cl_name
-            .stream().map(r -> Map.of("code", r.getClCode(), "name", nvl(r.getClName()))).toList();
+                        cb.like(cb.upper(root.get("clName")), patt)), page)
+            .stream().map(r -> {
+                Map<String, String> m = new LinkedHashMap<>();
+                m.put("code",     r.getClCode());
+                m.put("prevCode", nvl(r.getSuppAcctCode()));
+                m.put("name",     nvl(r.getClName()));
+                m.put("bee",      r.getBeeRating() != null ? String.valueOf(r.getBeeRating()) : "");
+                return m;
+            }).toList();
         return ResponseEntity.ok(results);
     }
 
     @GetMapping("/gl")
     public ResponseEntity<List<Map<String, String>>> lookupGl(
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(defaultValue = "15") int limit) {
+            @RequestParam(defaultValue = "200") int limit) {
         var page = PageRequest.of(0, limit, Sort.by("glCode"));
         String patt = "%" + q.toUpperCase() + "%";
         var results = gl01Repo.findAll(
             (root, query, cb) -> q.isBlank() ? cb.conjunction()
                 : cb.or(cb.like(cb.upper(root.get("glCode")), patt),
-                        cb.like(cb.upper(root.get("descr")), patt)), page)   // real field: descr
-            .stream().map(r -> Map.of("code", r.getGlCode(), "name", nvl(r.getDescr()))).toList();
+                        cb.like(cb.upper(root.get("descr")), patt)), page)
+            .stream().map(r -> {
+                Map<String, String> m = new LinkedHashMap<>();
+                m.put("code",   r.getGlCode());
+                m.put("name",   nvl(r.getDescr()));
+                m.put("type",   nvl(r.getAcctType()));
+                m.put("status", nvl(r.getStatus()));
+                return m;
+            }).toList();
         return ResponseEntity.ok(results);
     }
 

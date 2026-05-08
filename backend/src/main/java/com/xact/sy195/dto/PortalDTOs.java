@@ -185,4 +185,25 @@ public class PortalDTOs {
         private LocalDateTime completedAt;
         private String logOutput;
     }
+
+    // ── Documents ─────────────────────────────────────────────────────────────
+    @Data public static class RegDocumentDTO {
+        private Long id;
+        private Long registrationId;
+        private String fileName;
+        private String contentType;
+        private Long fileSize;
+        private String uploadedBy;
+        private LocalDateTime uploadedAt;
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+    @Data public static class NotificationDTO {
+        private Long id;
+        private Long registrationId;
+        private String type;
+        private String message;
+        private boolean read;
+        private LocalDateTime createdAt;
+    }
 }

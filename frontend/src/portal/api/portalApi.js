@@ -76,6 +76,25 @@ export const getAllRegistrations  = ()      => http().get('/admin/registrations'
 export const getPendingXact      = ()      => http().get('/admin/pending-xact').then(r => r.data)
 export const getPendingImply     = ()      => http().get('/admin/pending-imply').then(r => r.data)
 
+// ── Documents ─────────────────────────────────────────────────────────────────
+export const listDocuments  = (regId)        => http().get(`/registrations/${regId}/documents`).then(r => r.data)
+export const uploadDocument = (regId, file) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return http().post(`/registrations/${regId}/documents`, fd).then(r => r.data)
+}
+export const deleteDocument = (regId, docId) => http().delete(`/registrations/${regId}/documents/${docId}`).then(r => r.data)
+export function getDocumentUrl(regId, docId) {
+  const host  = window.location.hostname
+  const token = localStorage.getItem('pp_token')
+  return `${window.location.protocol}//${host}:8080/api/portal/registrations/${regId}/documents/${docId}/download`
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+export const getNotifications = ()  => http().get('/notifications').then(r => r.data)
+export const getUnreadCount   = ()  => http().get('/notifications/unread-count').then(r => r.data.count)
+export const markAllRead      = ()  => http().put('/notifications/read-all').then(r => r.data)
+
 // ── AI assistant ──────────────────────────────────────────────────────────────
 export const getAiSuggestions = (description) =>
   http().post('/ai/suggest', { description }).then(r => r.data)

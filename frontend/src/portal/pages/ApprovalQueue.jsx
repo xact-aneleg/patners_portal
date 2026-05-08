@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Sparkles, X } from 'lucide-react'
+import { Sparkles, X, FileText, Download, ChevronDown } from 'lucide-react'
 import {
   getAllRegistrations, getPendingXact, getPendingImply,
   approveXact, declineXact, approveImply, declineImply,
-  triggerConversion, getRegistration, getAiAnalysis
+  triggerConversion, getRegistration, getAiAnalysis,
+  listDocuments, getDocumentUrl,
 } from '../api/portalApi.js'
 import StatusPill from '../components/StatusPill.jsx'
 import RegistrationDetail from './RegistrationDetail.jsx'
@@ -21,6 +22,8 @@ export default function ApprovalQueue({ session }) {
   const [comments,   setComments]   = useState({})
   const [viewId,     setViewId]     = useState(null)
   const [aiPanel,    setAiPanel]    = useState(null)   // { regId, loading, result, error }
+  const [docs,       setDocs]       = useState({})     // { [regId]: [] }
+  const [docsOpen,   setDocsOpen]   = useState({})     // { [regId]: bool }
 
   const role = session?.role
 
@@ -32,6 +35,15 @@ export default function ApprovalQueue({ session }) {
     } catch (e) {
       const msg = e.response?.data?.message || e.response?.data || e.message || 'AI analysis failed'
       setAiPanel(p => ({ ...p, loading: false, error: String(msg) }))
+    }
+  }
+
+  async function toggleDocs(regId) {
+    const isOpen = docsOpen[regId]
+    setDocsOpen(d => ({ ...d, [regId]: !isOpen }))
+    if (!isOpen && !docs[regId]) {
+      const data = await listDocuments(regId).catch(() => [])
+      setDocs(d => ({ ...d, [regId]: data }))
     }
   }
 
@@ -171,6 +183,36 @@ export default function ApprovalQueue({ session }) {
               <div className={s.queueFieldKey}>Partner</div>
               <div className={s.queueFieldVal}>{r.partnerName || '—'}</div>
             </div>
+          </div>
+
+          {/* Documents */}
+          <div style={{borderTop:'1px solid var(--border-color)',padding:'8px 14px'}}>
+            <button
+              onClick={() => toggleDocs(r.id)}
+              style={{display:'flex',alignItems:'center',gap:6,background:'none',border:'none',
+                cursor:'pointer',fontSize:12,fontWeight:600,color:'var(--color-text-muted)',fontFamily:'inherit',padding:0}}>
+              <FileText size={13}/>
+              Documents {docs[r.id] ? `(${docs[r.id].length})` : ''}
+              <ChevronDown size={12} style={{transform: docsOpen[r.id] ? 'rotate(180deg)' : 'none', transition:'transform .15s'}}/>
+            </button>
+            {docsOpen[r.id] && (
+              <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:6}}>
+                {(docs[r.id] || []).length === 0
+                  ? <span style={{fontSize:12,color:'var(--color-text-muted)'}}>No documents attached</span>
+                  : (docs[r.id] || []).map(d => (
+                    <div key={d.id} className={s.docRow}>
+                      <FileText size={13} style={{color:'var(--color-primary)',flexShrink:0}}/>
+                      <span className={s.docName}>{d.fileName}</span>
+                      <span className={s.docMeta}>{d.fileSize ? (d.fileSize/1024).toFixed(0)+' KB' : ''}</span>
+                      <a href={getDocumentUrl(r.id, d.id)} download={d.fileName}
+                         className={s.docDownload} target="_blank" rel="noreferrer">
+                        <Download size={12}/> Download
+                      </a>
+                    </div>
+                  ))
+                }
+              </div>
+            )}
           </div>
 
           {/* Actions */}

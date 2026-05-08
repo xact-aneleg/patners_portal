@@ -68,13 +68,27 @@ public class BulkImportService {
                     String codeErr = validationService.validate("dl_code", dlCode, "C", true);
                     if (codeErr != null) { addErr(resp, i, "dl01_mast", "dl_code", dlCode, codeErr); continue; }
 
-                    Dl01Mast r = dl01Repo.findById(dlCode).orElse(new Dl01Mast());
+                    Optional<Dl01Mast> existingDl = dl01Repo.findById(dlCode);
+                    boolean isNew = !existingDl.isPresent();
+                    Dl01Mast r = existingDl.orElse(new Dl01Mast());
                     r.setDlCode(dlCode);
+
+                    // Mandatory: dl_name for new records
+                    if (isNew && blank(str(row, h, "dl_name"))) { addErr(resp, i, "dl01_mast", "dl_name", dlCode, "dl_name is required for new records"); continue; }
+                    // Enum: status
+                    String dlStatusRaw = strDef(row, h, "status", "A").toUpperCase();
+                    if (!dlStatusRaw.equals("A") && !dlStatusRaw.equals("I")) { addErr(resp, i, "dl01_mast", "status", dlCode, "status must be A or I, got: " + dlStatusRaw); continue; }
+                    // Enum: cr_status
+                    String crStatusRaw = strDef(row, h, "cr_status", "GOOD").toUpperCase();
+                    if (!Set.of("GOOD","HOLD","COD").contains(crStatusRaw)) { addErr(resp, i, "dl01_mast", "cr_status", dlCode, "cr_status must be GOOD, HOLD or COD, got: " + crStatusRaw); continue; }
+                    // Enum: master_acct
+                    String dlMasterRaw = strDef(row, h, "master_acct", "N").toUpperCase();
+                    if (!dlMasterRaw.equals("Y") && !dlMasterRaw.equals("N")) { addErr(resp, i, "dl01_mast", "master_acct", dlCode, "master_acct must be Y or N, got: " + dlMasterRaw); continue; }
 
                     // Real column names from xactdev_db schema
                     setStr(r::setDlName,          str(row, h, "dl_name"),           40);
-                    setStr(r::setStatus,           strDef(row, h, "status", "A"),     1);
-                    setStr(r::setMasterAcct,       strDef(row, h, "master_acct","N"), 1);
+                    setStr(r::setStatus,           dlStatusRaw,                       1);
+                    setStr(r::setMasterAcct,       dlMasterRaw,                       1);
                     setStr(r::setAddressOnlyAcct,  strDef(row, h, "address_only_acct","N"), 1);
                     setStr(r::setLinkedAcct,       str(row, h, "linked_acct"),        8);
                     setStr(r::setLoc,              str(row, h, "loc"),                3);
@@ -100,7 +114,7 @@ public class BulkImportService {
                     setStr(r::setRepCode,          str(row, h, "rep_code"),           5);
                     setStr(r::setMktRep,           str(row, h, "mkt_rep"),            5);
                     setStr(r::setClassCode,        str(row, h, "class"),              3);
-                    setStr(r::setCrStatus,         strDef(row, h, "cr_status","GOOD"),4);
+                    setStr(r::setCrStatus,         crStatusRaw,                       4);
                     setStr(r::setInvType,          str(row, h, "inv_type"),           1);
                     setStr(r::setTrackByForeignCurrency, str(row, h, "track_by_foreign_currency"), 1);
 
@@ -163,8 +177,24 @@ public class BulkImportService {
                     String codeErr = validationService.validate("stk_code", stkCode, "C", true);
                     if (codeErr != null) { addErr(resp, i, "st01_mast", "stk_code", stkCode, codeErr); continue; }
 
-                    St01Mast r = st01Repo.findById(stkCode).orElse(new St01Mast());
+                    Optional<St01Mast> existingSt = st01Repo.findById(stkCode);
+                    boolean isNew = !existingSt.isPresent();
+                    St01Mast r = existingSt.orElse(new St01Mast());
                     r.setStkCode(stkCode);
+
+                    // Mandatory for new records: desc_1, stk_grp, uom
+                    if (isNew && blank(str(row, h, "desc_1")))   { addErr(resp, i, "st01_mast", "desc_1",   stkCode, "desc_1 is required for new records"); continue; }
+                    if (isNew && blank(str(row, h, "stk_grp"))) { addErr(resp, i, "st01_mast", "stk_grp", stkCode, "stk_grp is required for new records"); continue; }
+                    if (isNew && blank(str(row, h, "uom")))      { addErr(resp, i, "st01_mast", "uom",      stkCode, "uom is required for new records"); continue; }
+                    // Enum: status
+                    String stStatusRaw = strDef(row, h, "status", "A").toUpperCase();
+                    if (!stStatusRaw.equals("A") && !stStatusRaw.equals("I")) { addErr(resp, i, "st01_mast", "status", stkCode, "status must be A or I, got: " + stStatusRaw); continue; }
+                    // Enum: vat_ind — S/Z/E/X/N/L/P/A
+                    String vatIndRaw = strDef(row, h, "vat_ind", "S").toUpperCase();
+                    if (!Set.of("S","Z","E","X","N","L","P","A").contains(vatIndRaw)) { addErr(resp, i, "st01_mast", "vat_ind", stkCode, "vat_ind must be S/Z/E/X/N/L/P/A, got: " + vatIndRaw); continue; }
+                    // Enum: master_acct
+                    String stMasterRaw = strDef(row, h, "master_acct", "N").toUpperCase();
+                    if (!stMasterRaw.equals("Y") && !stMasterRaw.equals("N")) { addErr(resp, i, "st01_mast", "master_acct", stkCode, "master_acct must be Y or N, got: " + stMasterRaw); continue; }
 
                     // Real column names: desc_1 through desc_6
                     setStr(r::setDesc1,        str(row, h, "desc_1"),     40);
@@ -174,19 +204,20 @@ public class BulkImportService {
                     setStr(r::setDesc5,        str(row, h, "desc_5"),     40);
                     setStr(r::setDesc6,        str(row, h, "desc_6"),     40);
                     setStr(r::setBarcode,      str(row, h, "barcode"),    16);
-                    setStr(r::setStatus,       strDef(row, h, "status","A"), 1);
-                    setStr(r::setMasterAcct,   strDef(row, h, "master_acct","N"), 1);
-                    setStr(r::setLinkedTo,     str(row, h, "linked_to"), 16);
+                    setStr(r::setStatus,       stStatusRaw,                       1);
+                    setStr(r::setMasterAcct,   stMasterRaw,                       1);
+                    setStr(r::setLinkedTo,     str(row, h, "linked_to"),          16);
                     setStr(r::setWebEnabled,   strDef(row, h, "web_enabled","N"),    1);
                     setStr(r::setRetailEnabled,strDef(row, h, "retail_enabled","N"), 1);
                     setStr(r::setTradeInItem,  strDef(row, h, "trade_in_item","N"),  1);
                     setStr(r::setImportItem,   strDef(row, h, "import_item","N"),    1);
                     setStr(r::setKeepBal,      strDef(row, h, "keep_bal","Y"),       1);
-                    setStr(r::setStkGrp,       str(row, h, "stk_grp"),    5);
-                    setStr(r::setSerialTrack,  strDef(row, h, "serial_track","N"),   1);
+                    setStr(r::setStkGrp,       str(row, h, "stk_grp"),            5);
+                    setStr(r::setListGpCat,    str(row, h, "list_gp_cat"),        1);
+                    setStr(r::setSerialTrack,  strDef(row, h, "serial_track","N"), 1);
                     setStr(r::setUom,          str(row, h, "uom"),         5);
                     setStr(r::setLineType,     str(row, h, "line_type"),   1);
-                    setStr(r::setVatInd,       strDef(row, h, "vat_ind","S"), 1);
+                    setStr(r::setVatInd,       vatIndRaw,                     1);
                     setStr(r::setHsCode,       str(row, h, "hs_code"),    13);
                     setStr(r::setLevyCode,     str(row, h, "levy_code"),   6);
 
@@ -233,12 +264,23 @@ public class BulkImportService {
                     String codeErr = validationService.validate("cl_code", clCode, "C", true);
                     if (codeErr != null) { addErr(resp, i, "cl01_mast", "cl_code", clCode, codeErr); continue; }
 
-                    Cl01Mast r = cl01Repo.findById(clCode).orElse(new Cl01Mast());
+                    Optional<Cl01Mast> existingCl = cl01Repo.findById(clCode);
+                    boolean isNew = !existingCl.isPresent();
+                    Cl01Mast r = existingCl.orElse(new Cl01Mast());
                     r.setClCode(clCode);
 
+                    // Mandatory: cl_name for new records
+                    if (isNew && blank(str(row, h, "cl_name"))) { addErr(resp, i, "cl01_mast", "cl_name", clCode, "cl_name is required for new records"); continue; }
+                    // Enum: status
+                    String clStatusRaw = strDef(row, h, "status", "A").toUpperCase();
+                    if (!clStatusRaw.equals("A") && !clStatusRaw.equals("I")) { addErr(resp, i, "cl01_mast", "status", clCode, "status must be A or I, got: " + clStatusRaw); continue; }
+                    // Enum: master_acct
+                    String clMasterRaw = strDef(row, h, "master_acct", "N").toUpperCase();
+                    if (!clMasterRaw.equals("Y") && !clMasterRaw.equals("N")) { addErr(resp, i, "cl01_mast", "master_acct", clCode, "master_acct must be Y or N, got: " + clMasterRaw); continue; }
+
                     setStr(r::setClName,        str(row, h, "cl_name"),     40);
-                    setStr(r::setStatus,         strDef(row, h, "status","A"), 1);
-                    setStr(r::setMasterAcct,     strDef(row, h, "master_acct","N"), 1);
+                    setStr(r::setStatus,         clStatusRaw,                 1);
+                    setStr(r::setMasterAcct,     clMasterRaw,                 1);
                     setStr(r::setLinkedAcct,     str(row, h, "linked_acct"),  8);
                     setStr(r::setTel1,           str(row, h, "tel_1"),        22);
                     setStr(r::setTel2,           str(row, h, "tel_2"),        22);
@@ -315,14 +357,28 @@ public class BulkImportService {
                     String codeErr = validationService.validate("gl_code", glCode, "C", true);
                     if (codeErr != null) { addErr(resp, i, "gl01_mast", "gl_code", glCode, codeErr); continue; }
 
-                    Gl01Mast r = gl01Repo.findById(glCode).orElse(new Gl01Mast());
+                    Optional<Gl01Mast> existingGl = gl01Repo.findById(glCode);
+                    boolean isNew = !existingGl.isPresent();
+                    Gl01Mast r = existingGl.orElse(new Gl01Mast());
                     r.setGlCode(glCode);
+
+                    // Mandatory: descr for new records
+                    if (isNew && blank(str(row, h, "descr"))) { addErr(resp, i, "gl01_mast", "descr", glCode, "descr is required for new records"); continue; }
+                    // Enum: status
+                    String glStatusRaw = strDef(row, h, "status", "A").toUpperCase();
+                    if (!glStatusRaw.equals("A") && !glStatusRaw.equals("I")) { addErr(resp, i, "gl01_mast", "status", glCode, "status must be A or I, got: " + glStatusRaw); continue; }
+                    // Enum: acct_type B/P
+                    String acctTypeRaw = strDef(row, h, "acct_type", "P").toUpperCase();
+                    if (!acctTypeRaw.equals("B") && !acctTypeRaw.equals("P")) { addErr(resp, i, "gl01_mast", "acct_type", glCode, "acct_type must be B or P, got: " + acctTypeRaw); continue; }
+                    // Enum: post P/S
+                    String postRaw = strDef(row, h, "post", "P").toUpperCase();
+                    if (!postRaw.equals("P") && !postRaw.equals("S")) { addErr(resp, i, "gl01_mast", "post", glCode, "post must be P or S, got: " + postRaw); continue; }
 
                     // Real column name is "descr" not "description"
                     setStr(r::setDescr,         str(row, h, "descr"),         40);
-                    setStr(r::setStatus,         strDef(row, h, "status","A"), 1);
-                    setStr(r::setAcctType,       strDef(row, h, "acct_type","P"), 1);
-                    setStr(r::setPost,           strDef(row, h, "post","P"),   1);
+                    setStr(r::setStatus,         glStatusRaw,                   1);
+                    setStr(r::setAcctType,       acctTypeRaw,                   1);
+                    setStr(r::setPost,           postRaw,                       1);
                     setStr(r::setControl,        str(row, h, "control"),       8);
                     setStr(r::setDetailTrans,    str(row, h, "detail_trans"),  1);
                     setStr(r::setLocAnal,        str(row, h, "loc_anal"),      1);
